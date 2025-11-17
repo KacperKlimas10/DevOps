@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: user-service-destination-rule
+spec:
+  host: user-service.prod-user-service.svc.cluster.local    # Kubernetes FQDN
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN   # We can use other interesting load balancing algorithms
+  subsets:
+    - name: v1.0
+      labels:
+        app: user-service
+        version: v1.0
+    - name: v2.0  # For future purposes
+      labels:
+        app: user-service
+        version: v2.0
+    - name: v3.0  # For future purposes
+      labels:
+        app: user-service
+        version: v3.0

@@ -1,27 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: storage-service
-  namespace: microservices-backend
+  name: storage-service-v1.0
+  namespace: prod-storage-service
   labels:
     app: storage-service
+    version: v1.0
 spec:
   selector:
     matchLabels:
       app: storage-service
+      version: v1.0
   template:
     metadata:
-      name: storage-service
+      name: storage-service-v1.0
       labels:
         app: storage-service
+        version: v1.0
     spec:
       containers:
-        - name: storage-service
+        - name: storage-service-v1.0
           image: storage-service:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness

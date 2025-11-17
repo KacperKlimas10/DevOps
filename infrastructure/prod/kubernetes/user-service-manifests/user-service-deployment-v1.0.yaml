@@ -1,27 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-service
-  namespace: microservices-backend
+  name: user-service-v1.0
+  namespace: prod-user-service
   labels:
     app: user-service
+    version: v1.0
 spec:
   selector:
     matchLabels:
       app: user-service
+      version: v1.0
   template:
     metadata:
-      name: user-service
+      name: user-service-v1.0
       labels:
         app: user-service
+        version: v1.0
     spec:
       containers:
-        - name: user-service
+        - name: user-service-v1.0
           image: user-service:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
               protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
