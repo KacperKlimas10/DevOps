@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: devops-gateway
+  namespace: prod
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: ingress-gateway-cert  # This should match the Certificate secretName
+      hosts:
+        - devops.kacperklimas.com   # This should match a DNS name in the Certificate

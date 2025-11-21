@@ -1,26 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: rabbitmq-operator
+  name: storage-service
   namespace: argocd
-  labels:
-    version: v2.17.0
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   project: default
   source:
     repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing
-    path: infrastructure/prod/kubernetes/rabbitmq-manifests
+    path: infrastructure/prod/kubernetes/storage-service-manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: rabbitmq-system
+    namespace: prod
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        istio-injection: enabled  # To inject sidecar proxy automatically we need set this label
     syncOptions:
       - CreateNamespace=true

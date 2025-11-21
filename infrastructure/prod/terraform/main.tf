@@ -10,16 +10,18 @@ resource "cloudflare_zone" "parcel_platform_zone" {
 
 resource "cloudflare_dns_record" "azure_vpn_dns_record" {
   name    = "vpn"
-  ttl     = 3600
+  ttl     = 1   # Auto TTL for proxied record
   type    = "A"
+  proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "A record for Azure VPN Gateway"
   content = azurerm_public_ip.vpn_public_ip.ip_address
 }
 resource "cloudflare_dns_record" "azure_blob_dns_record" {
   name    = "blob"
-  ttl     = 3600
+  ttl     = 1   # Auto TTL for proxied record
   type    = "CNAME"
+  proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "CNAME record for Azure Blob Storage"
   content = data.azurerm_storage_account.azure_storage_account.primary_blob_host
@@ -27,8 +29,9 @@ resource "cloudflare_dns_record" "azure_blob_dns_record" {
 
 resource "cloudflare_dns_record" "azure_registry_dns_record" {
   name    = "registry"
-  ttl     = 3600
+  ttl     = 1   # Auto TTL for proxied record
   type    = "CNAME"
+  proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "CNAME record for Azure Container Registry"
   content = data.azurerm_container_registry.azure_container_registry.login_server

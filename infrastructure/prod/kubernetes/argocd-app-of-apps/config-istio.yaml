@@ -1,21 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: user-service
+  name: config-cert-manager
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   annotations:
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   project: default
   source:
     repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing
-    path: infrastructure/prod/kubernetes/user-service-manifests
+    path: infrastructure/prod/kubernetes/istio-manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: prod-user-service
   syncPolicy:
     automated:
       prune: true

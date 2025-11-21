@@ -1,15 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: storage-service-v1.0
-  namespace: prod-storage-service
+  name: storage-service
+  namespace: prod
   labels:
     app: storage-service
-    version: v1.0
+    service: storage-service
 spec:
   selector:
-    app: storage-service
-    version: v1.0
+    app: storage-service  # One service per all deployments releases
   ports:
     - protocol: TCP
       port: 8080

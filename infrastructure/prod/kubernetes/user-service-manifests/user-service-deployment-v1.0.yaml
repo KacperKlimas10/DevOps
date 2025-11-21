@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-service-v1.0
-  namespace: prod-user-service
+  namespace: prod
   labels:
     app: user-service
     version: v1.0
@@ -28,6 +28,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             privileged: false
+            runAsNonRoot: true
           readinessProbe:
             httpGet:
               path: /actuator/health/readiness
@@ -40,4 +41,5 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
+      serviceAccountName: user-service
       restartPolicy: Always

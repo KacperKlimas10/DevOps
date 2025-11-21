@@ -24,7 +24,7 @@ variable "azure_application_tags" {
   type = map(any)
   default = {
     "appname" : "parcelplatform"
-    "env" : "dev"
+    "env" : "prod"
   }
 }
 

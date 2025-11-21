@@ -1,17 +1,13 @@
-apiVersion: v1
-kind: Pod
+apiVersion: networking.istio.io/v1
+kind: VirtualService
 metadata:
-  name: title
-  labels:
-    role: title
+  name: user-service
+  namespace: prod
 spec:
-  containers:
-    - name: title
-      image: nginx
-      imagePullPolicy: IfNotPresent
-      ports:
-        - name: title
-          containerPort: 80
-          protocol: TCP
-  restartPolicy: Always
-  
+  hosts:
+    - user-service.prod.svc.cluster.local
+  gateways:
+    - prod/devops-gateway
+  http:
+    - match:
+      route:

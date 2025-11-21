@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-issuer
+  namespace: prod
+spec:
+  acme:
+    email: k.klimas.bis@gmail.com
+    profile: tlsserver
+    server: https://acme-v02.api.letsencrypt.org/directory  # Let's Encrypt issuer
+    privateKeySecretRef:
+      name: letsencrypt-issuer-account-key
+    solvers:
+      - dns01:  # To confirm ownership of our domain we need to create DNS TXT record using dns01 challenge
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-key-secret
+              key: api-token

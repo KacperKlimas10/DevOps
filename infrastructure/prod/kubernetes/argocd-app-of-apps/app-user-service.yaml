@@ -1,27 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vault-secrets-operator
+  name: user-service
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   project: default
   source:
-    chart: vault-secrets-operator
-    repoURL: https://helm.releases.hashicorp.com
-    targetRevision: 0.10.0
-    helm:
-      releaseName: vault-secrets-operator
+    repoURL: https://github.com/KacperKlimas10/DevOps.git
+    targetRevision: feature/argocd-testing
+    path: infrastructure/prod/kubernetes/user-service-manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: vault-secrets-operator
+    namespace: prod
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     managedNamespaceMetadata:
       labels:
-        istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
+        istio-injection: enabled  # To inject sidecar proxy automatically we need set this label
     syncOptions:
       - CreateNamespace=true
