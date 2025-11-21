@@ -1,21 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vault-secrets-operator
+  name: vault-server
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    chart: vault-secrets-operator
+    chart: vault
     repoURL: https://helm.releases.hashicorp.com
-    targetRevision: 0.10.0
+    targetRevision: 0.31.0
     helm:
-      releaseName: vault-secrets-operator
+      releaseName: vault-server
   destination:
     server: https://kubernetes.default.svc
-    namespace: vault-secrets-operator
+    namespace: vault
   syncPolicy:
     automated:
       prune: true
