@@ -209,27 +209,6 @@ resource "azurerm_virtual_network_peering" "aks_management" {
   use_remote_gateways       = true
 }
 
-# module "azure_node_vnet_route_table" {
-#   source              = "Azure/avm-res-network-routetable/azurerm"
-#   version             = "0.4.1"
-#   location            = var.azure_region
-#   name                = "routetable-azure-node-vnet"
-#   resource_group_name = module.azure_resource_group.name
-#   routes = {
-#     route1 = {
-#       name           = "route-to-vpn-pool"
-#       address_prefix = "172.16.0.0/24"
-#       next_hop_type  = "VnetLocal"
-#     }
-#   }
-#   subnet_resource_ids = {
-#     subnet1 = module.azure_node_vnet.subnets["subnet1"].resource_id
-#     subnet2 = module.azure_node_vnet.subnets["subnet2"].resource_id
-#     subnet3 = module.azure_node_vnet.subnets["subnet3"].resource_id
-#   }
-#   tags = var.azure_application_tags
-# }
-
 module "azure_node_vnet_nsg" {
   source              = "Azure/avm-res-network-networksecuritygroup/azurerm"
   version             = "0.5.0"
@@ -396,23 +375,5 @@ resource "helm_release" "argo_cd" {
   version          = "9.0.5"
   namespace        = "argocd"
   create_namespace = true
-  # values = [
-  #   <<-EOF
-  #     redis-ha:
-  #       enabled: true
-  #     controller:
-  #       replicas: 1
-  #     server:
-  #       autoscaling:
-  #         enabled: true
-  #         minReplicas: 2
-  #     repoServer:
-  #       autoscaling:
-  #         enabled: true
-  #         minReplicas: 2
-  #     applicationSet:
-  #       replicas: 2
-  #   EOF
-  # ]
   depends_on = [module.azure_aks]
 }

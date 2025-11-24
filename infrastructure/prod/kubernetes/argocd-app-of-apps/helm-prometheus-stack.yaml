@@ -5,6 +5,8 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   project: default
   source:
@@ -20,6 +22,9 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true

@@ -5,9 +5,23 @@ metadata:
   namespace: prod
 spec:
   hosts:
-    - user-service.prod.svc.cluster.local
+    - devops.kacperklimas.com
   gateways:
-    - prod/devops-gateway
+    - prod/application-gateway
   http:
     - match:
+        - uri:
+            prefix: /api/user
       route:
+        - destination:
+            host: user-service.prod.svc.cluster.local
+            subset: v1.0
+          weight: 100   # We declare that all traffic is routed to v1.0 version
+        - destination:
+            host: user-service.prod.svc.cluster.local
+            subset: v2.0
+          weight: 0
+        - destination:
+            host: user-service.prod.svc.cluster.local
+            subset: v3.0
+          weight: 0

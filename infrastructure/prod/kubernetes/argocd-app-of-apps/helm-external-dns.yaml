@@ -16,6 +16,11 @@ spec:
       values: |       
         provider:
           name: cloudflare
+        sources:
+          - service
+          - ingress
+          - istio-gateway
+          - istio-virtualservice
         env:
           - name: CF_API_KEY
             valueFrom:

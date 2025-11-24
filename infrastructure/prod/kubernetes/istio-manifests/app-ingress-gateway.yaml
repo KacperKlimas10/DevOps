@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
-  name: devops-gateway
+  name: application-gateway
   namespace: prod
 spec:
   selector:
