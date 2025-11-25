@@ -22,6 +22,9 @@ spec:
       selfHeal: true
     managedNamespaceMetadata:
       labels:
+        app.kubernetes.io/component: rabbitmq-operator
+        app.kubernetes.io/name: rabbitmq-system
+        app.kubernetes.io/part-of: rabbitmq
         istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
     syncOptions:
       - CreateNamespace=true
