@@ -22,16 +22,11 @@ spec:
           - istio-gateway
           - istio-virtualservice
         env:
-          - name: CF_API_KEY
+          - name: CF_API_TOKEN
             valueFrom:
               secretKeyRef:
                 name: cloudflare-api-key
                 key: apiKey
-          - name: CF_API_EMAIL
-            valueFrom:
-              secretKeyRef:
-                name: cloudflare-api-key
-                key: email
   destination:
     server: https://kubernetes.default.svc
     namespace: external-dns

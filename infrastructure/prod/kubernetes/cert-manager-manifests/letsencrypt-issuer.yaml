@@ -13,6 +13,6 @@ spec:
     solvers:
       - dns01:  # To confirm ownership of our domain we need to create DNS TXT record using dns01 challenge
           cloudflare:
-            apiKeySecretRef:
-              name: cloudflare-api-key-secret
-              key: api-key
+            apiTokenSecretRef:
+              name: cloudflare-api-token-secret
+              key: api-token

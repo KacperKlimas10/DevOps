@@ -19,7 +19,7 @@ spec:
         version: v1.0
     spec:
       containers:
-        - name: storage-service-v1.0
+        - name: storage-service
           image: storage-service:dev
           imagePullPolicy: IfNotPresent
           ports:

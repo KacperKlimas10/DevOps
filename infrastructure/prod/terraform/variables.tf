@@ -1,7 +1,3 @@
-variable "cloudflare_account_email" {
-  type = string
-}
-
 variable "cloudflare_api_token" {
   type      = string
   sensitive = true

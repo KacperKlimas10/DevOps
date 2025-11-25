@@ -19,7 +19,7 @@ spec:
         version: v1.0
     spec:
       containers:
-        - name: user-service-v1.0
+        - name: user-service
           image: user-service:dev
           imagePullPolicy: IfNotPresent
           ports:
