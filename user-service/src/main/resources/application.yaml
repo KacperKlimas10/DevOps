@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: "user-service"
+  datasource:
+    username: "${POSTGRESQL_USERNAME:kacper}"
+    password: "${POSTGRESQL_PASSWORD:kacper}"
+    url: "${POSTGRESQL_URL:jdbc:postgresql://localhost/devops}"
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  rabbitmq:
+    username: "${RABBITMQ_USERNAME:kacper}"
+    password: "${RABBITMQ_PASSWORD:kacper}"
+    host: "${RABBITMQ_HOST:localhost}"
+    port: "${RABBITMQ_PORT:5672}"
+    virtual-host: "${RABBITMQ_VHOST:rabbitmq}"
+    template:
+      retry:
+        enabled: true
+        initial-interval: 2s
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true   # Kubernetes readiness and liveness probes
+        add-additional-paths: true
+  endpoints:  # Metrics for Prometheus
+    web:
+      exposure:
+        include: "*"
+    jmx:
+      exposure:
+        include: "*"
+server:
+  port: "${SERVER_PORT:8501}"

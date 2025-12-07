@@ -1,6 +1,5 @@
 package com.parcelplatform.userservice.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import com.parcelplatform.sharedresources.event.EventPublisher;
 import com.parcelplatform.userservice.model.UserModel;
@@ -17,13 +16,12 @@ public class UserService {
     @Qualifier("RabbitMQ")
     private final EventPublisher eventPublisher;
 
-    @Transactional
     public void createUser(String username, String email) {
-        userRepository.save(UserModel.builder()
-                .username(username)
-                .email(email)
-                .build()
-
+        userRepository.save(
+                UserModel.builder()
+                        .username(username)
+                        .email(email)
+                        .build()
         );
     }
 }

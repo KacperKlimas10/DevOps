@@ -15,16 +15,26 @@
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>io.awspring.cloud</groupId>
-			<artifactId>spring-cloud-aws-starter-s3</artifactId>
-			<version>3.4.0</version>
-		</dependency>
-		<dependency>
 			<groupId>com.azure.spring</groupId>
 			<artifactId>spring-cloud-azure-dependencies</artifactId>
 			<version>6.0.0</version>
 			<type>pom</type>
 			<scope>import</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-starter</artifactId>
+			<version>6.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-starter-storage-blob</artifactId>
+			<version>6.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.azure.spring</groupId>
+			<artifactId>spring-cloud-azure-starter-actuator</artifactId>
+			<version>6.0.0</version>
 		</dependency>
 	</dependencies>
 </project>

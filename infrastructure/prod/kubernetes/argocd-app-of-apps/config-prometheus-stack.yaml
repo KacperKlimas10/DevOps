@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: storage-service
+  name: config-prometheus-stack
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -12,16 +12,12 @@ spec:
   source:
     repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing
-    path: infrastructure/prod/kubernetes/storage-service-manifests
+    path: infrastructure/prod/kubernetes/prometheus-stack-manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: prod
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
-    managedNamespaceMetadata:
-      labels:
-        istio-injection: enabled  # To inject sidecar proxy automatically we need set this label
     syncOptions:
       - CreateNamespace=true

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.net.URISyntaxException;
 
 @RestController
-@RequestMapping("/api/v1/storage")
+@RequestMapping("/api/storage")
 @RequiredArgsConstructor
 public class StorageController {
 

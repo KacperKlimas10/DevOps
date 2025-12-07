@@ -13,7 +13,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StorageService {
 
-    @Qualifier("AmazonS3")
+    @Qualifier("BlobStorage")
     private final StorageRepository storageRepository;
 
     public FileUploadResponseDto fileUploadRequest(FileUploadRequestDto fileUploadRequestDto) {

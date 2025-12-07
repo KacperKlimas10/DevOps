@@ -1,0 +1,228 @@
+services:
+
+  # API GATEWAY
+
+  kong-cp:
+    image: '${GW_IMAGE:-kong/kong-gateway:3.11.0.2}'
+    restart: on-failure
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yaml
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+      KONG_ADMIN_GUI_LISTEN: 0.0.0.0:8002, 0.0.0.0:8445 ssl
+      KONG_ADMIN_GUI_URL: http://${GW_HOST:-localhost}:8002
+      KONG_PASSWORD: handyshake
+    ports:
+      - "8000:8000"  # Proxy HTTP
+      - "8443:8443"  # Proxy HTTPS
+      - "8001:8001"  # Admin API HTTP
+      - "8444:8444"  # Admin API HTTPS
+      - "8002:8002"  # Kong Manager HTTP
+      - "8445:8445"  # Kong Manager HTTPS
+    networks:
+      - backend-network
+    volumes:
+      - ./kong/kong.yaml:/kong/declarative/kong.yaml
+    command: kong start
+
+  # MICROSERVICES
+
+  storage-service:
+    image: storage-service:dev
+    build:
+      context: ../../storage-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      SERVER_PORT: 8080
+      RABBITMQ_HOST: rabbitmq
+      AZURE_BLOB_ENDPOINT: http://azurite:10000/devstoreaccount1
+    networks:
+      - backend-network
+      - db-network
+#    command: ["--spring.profiles.active=development"]  # Here we override CMD to specify profile arg
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 0s
+      start_interval: 5s
+
+  user-service:
+    image: user-service:dev
+    build:
+      context: ../../user-service
+      dockerfile: Dockerfile
+    restart: on-failure
+    environment:
+      SERVER_PORT: 8080
+      RABBITMQ_HOST: rabbitmq
+      POSTGRESQL_URL: jdbc:postgresql://postgresql/devops
+    networks:
+      - backend-network
+      - db-network
+#    command: ["--spring.profiles.active=development"]  # Here we override CMD to specify profile arg
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 0s
+      start_interval: 5s
+
+  # BROKERS
+
+  rabbitmq:
+    image: rabbitmq:management
+    restart: on-failure
+    environment:
+      RABBITMQ_DEFAULT_USER: kacper
+      RABBITMQ_DEFAULT_PASS: kacper
+      RABBITMQ_DEFAULT_VHOST: rabbitmq
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: -rabbitmq_management load_definitions "/etc/rabbitmq/definitions.json"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend-network
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+      - ./rabbitmq:/etc/rabbitmq
+
+  # DATABASES
+
+  postgresql:
+    image: postgres:latest
+    restart: on-failure
+    environment:
+      POSTGRES_USER: kacper
+      POSTGRES_PASSWORD: kacper
+      POSTGRES_DB: devops
+    ports:
+      - "5432:5432"
+    networks:
+      - db-network
+    volumes:
+      - postgresql:/var/lib/postgresql
+
+  redis:
+    image: redis:latest
+    restart: on-failure
+    networks:
+      - backend-network
+    volumes:
+      - redis:/data
+
+  mongo:
+    image: mongo:latest
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: kacper
+      MONGO_INITDB_ROOT_PASSWORD: kacper
+    networks:
+      - db-network
+    volumes:
+      - mongodb:/data/db
+
+  azurite:  # Local Azure BlobStorage
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    restart: on-failure
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    networks:
+      - backend-network
+    volumes:
+      - azurerite:/data
+    command: ["azurite", "--blobHost", "0.0.0.0", "--queueHost", "0.0.0.0", "--tableHost", "0.0.0.0"]
+
+  ## DATABASE GUI
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: on-failure
+    environment:
+      PGADMIN_DEFAULT_EMAIL: kacper@kacper.pl
+      PGADMIN_DEFAULT_PASSWORD: kacper
+    ports:
+      - "8080:80"
+    networks:
+      - db-network
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+
+  mongo-express:
+    image: mongo-express:latest
+    restart: on-failure
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: kacper
+      ME_CONFIG_MONGODB_ADMINPASSWORD: kacper
+      ME_CONFIG_MONGODB_URL: mongodb://kacper:kacper@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+    networks:
+      - db-network
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    restart: on-failure
+    ports:
+      - "5540:5540"
+    networks:
+      - backend-network
+    volumes:
+      - redisinsight:/data
+
+  # REGISTRY
+
+  registry:
+    image: registry:latest
+    restart: on-failure
+    ports:
+      - "5000:5000"
+    networks:
+      - backend-network
+    volumes:
+      - registry:/var/lib/registry
+
+  # MONITORING
+
+  prometheus:
+    image: prom/prometheus:main
+    restart: on-failure
+    networks:
+      - monitoring-network
+      - backend-network
+      - db-network
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml
+
+  grafana:
+    image: grafana/grafana:12.2.0-ubuntu
+    restart: on-failure
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring-network
+    volumes:
+      - grafana:/var/lib/grafana
+
+volumes:
+  postgresql:
+  pgadmin:
+  mongodb:
+  redis:
+  azurerite:
+  registry:
+  redisinsight:
+  rabbitmq:
+  grafana:
+
+networks:
+  backend-network:
+  db-network:
+  monitoring-network:

@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: "storage-service"
+  cloud:
+    azure:
+      storage:
+        blob:
+          account-name: "${AZURE_BLOB_ACCOUNT_NAME:devstoreaccount1}"
+          account-key: "${AZURE_BLOB_ACCOUNT_KEY:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==}"
+          endpoint: "${AZURE_BLOB_ENDPOINT:http://localhost:10000/devstoreaccount1}"
+  rabbitmq:
+    username: "${RABBITMQ_USERNAME:kacper}"
+    password: "${RABBITMQ_PASSWORD:kacper}"
+    host: "${RABBITMQ_HOST:localhost}"
+    port: "${RABBITMQ_PORT:5672}"
+    virtual-host: "${RABBITMQ_VHOST:rabbitmq}"
+    template:
+      retry:
+        enabled: true
+        initial-interval: 2s
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true   # Kubernetes readiness and liveness probes
+        add-additional-paths: true
+  endpoints:  # Metrics for Prometheus
+    web:
+      exposure:
+        include: "*"
+    jmx:
+      exposure:
+        include: "*"
+server:
+  port: "${SERVER_PORT:8500}"

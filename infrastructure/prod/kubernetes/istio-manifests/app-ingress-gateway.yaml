@@ -23,5 +23,6 @@ spec:
         - devops.kacperklimas.com   # This should match a DNS name in the Certificate
       tls:
         mode: SIMPLE
-        credentialName: ingress-gateway-cert  # This should match the Certificate secretName
-        minProtocolVersion: TLSV1_3
+        credentialName: app-ingress-gateway-cert  # This should match the Certificate secretName
+        minProtocolVersion: TLSV1_2
+        maxProtocolVersion: TLSV1_3

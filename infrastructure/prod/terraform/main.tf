@@ -10,16 +10,17 @@ resource "cloudflare_zone" "parcel_platform_zone" {
 
 resource "cloudflare_dns_record" "azure_vpn_dns_record" {
   name    = "vpn"
-  ttl     = 1   # Auto TTL for proxied record
+  ttl     = 1 # Auto TTL for proxied record
   type    = "A"
   proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "A record for Azure VPN Gateway"
   content = azurerm_public_ip.vpn_public_ip.ip_address
 }
+
 resource "cloudflare_dns_record" "azure_blob_dns_record" {
   name    = "blob"
-  ttl     = 1   # Auto TTL for proxied record
+  ttl     = 1 # Auto TTL for proxied record
   type    = "CNAME"
   proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
@@ -29,7 +30,7 @@ resource "cloudflare_dns_record" "azure_blob_dns_record" {
 
 resource "cloudflare_dns_record" "azure_registry_dns_record" {
   name    = "registry"
-  ttl     = 1   # Auto TTL for proxied record
+  ttl     = 1 # Auto TTL for proxied record
   type    = "CNAME"
   proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
@@ -217,7 +218,7 @@ module "azure_node_vnet_nsg" {
   resource_group_name = module.azure_resource_group.name
   security_rules = {
     rule1 = {
-      name                       = "InboundWeb"
+      name                       = "InboundWebTCP"
       priority                   = 100
       protocol                   = "Tcp"
       direction                  = "Inbound"
@@ -235,7 +236,7 @@ module "azure_node_vnet_nsg" {
       access                     = "Allow"
       destination_address_prefix = "*"
       destination_port_range     = "*"
-      source_address_prefix      = "10.1.0.0/24"
+      source_address_prefix      = "172.16.0.0/24" # Allow only from VPN clients
       source_port_range          = "*"
     }
     rule4 = {
@@ -244,13 +245,13 @@ module "azure_node_vnet_nsg" {
       protocol                   = "*"
       direction                  = "Outbound"
       access                     = "Allow"
-      destination_address_prefix = "10.1.0.0/24"
+      destination_address_prefix = "172.16.0.0/24" # Allow only from VPN clients
       destination_port_range     = "*"
       source_address_prefix      = "*"
       source_port_range          = "*"
     }
     rule5 = {
-      name                       = "OutboundWeb"
+      name                       = "OutboundWebTCP"
       priority                   = 150
       protocol                   = "Tcp"
       direction                  = "Outbound"
@@ -258,12 +259,22 @@ module "azure_node_vnet_nsg" {
       destination_address_prefix = "Internet"
       destination_port_range     = "*"
       source_address_prefix      = "*"
-      source_port_range          = "*"
+      source_port_ranges         = ["80", "443", "53"] # HTTP, HTTPS, DNS TCP
+    }
+    rule6 = {
+      name                       = "OutboundWebUDP"
+      priority                   = 200
+      protocol                   = "Udp"
+      direction                  = "Outbound"
+      access                     = "Allow"
+      destination_address_prefix = "Internet"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      source_port_range          = ["53"] # DNS UDP
     }
   }
   tags = var.azure_application_tags
 }
-
 
 module "azure_aks" {
   source              = "Azure/avm-res-containerservice-managedcluster/azurerm"
@@ -375,5 +386,5 @@ resource "helm_release" "argo_cd" {
   version          = "9.0.5"
   namespace        = "argocd"
   create_namespace = true
-  depends_on = [module.azure_aks]
+  depends_on       = [module.azure_aks]
 }
