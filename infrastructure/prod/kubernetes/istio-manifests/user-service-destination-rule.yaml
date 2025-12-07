@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: user-service
+  namespace: prod
+spec:
+  host: user-service.prod.svc.cluster.local  # Kubernetes FQDN
+  trafficPolicy:  # Default traffic policy
+    tls:
+      mode: ISTIO_MUTUAL  # This mode uses certificates generated automatically by Istio for mTLS authentication.
+    loadBalancer:
+      simple: LEAST_REQUEST   # We can use other interesting load balancing algorithms
+  subsets:
+    - name: v1.0
+      labels:
+        app: user-service
+        version: v1.0
+    - name: v2.0  # For future purposes
+      labels:
+        app: user-service
+        version: v2.0
+    - name: v3.0  # For future purposes
+      labels:
+        app: user-service
+        version: v3.0

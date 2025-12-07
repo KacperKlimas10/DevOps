@@ -1,6 +1,7 @@
 package com.parcelplatform.storageservice.storage;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.net.URL;

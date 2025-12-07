@@ -1,19 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: devops-app
+  name: istiod
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io  # Cascade delete
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
-    repoURL: https://github.com/KacperKlimas10/DevOps.git
-    targetRevision: feature/argocd-testing
-    path: infrastructure/prod/kubernetes/argocd-app-of-apps
+    chart: istiod
+    repoURL: https://istio-release.storage.googleapis.com/charts
+    targetRevision: 1.27.3
+    helm:
+      releaseName: istiod
   destination:
     server: https://kubernetes.default.svc
-    namespace: argocd
+    namespace: istio-system
   syncPolicy:
     automated:
       prune: true

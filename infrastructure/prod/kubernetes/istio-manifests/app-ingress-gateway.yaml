@@ -1,0 +1,28 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: application-gateway
+  namespace: prod
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http2
+        protocol: HTTP2
+      hosts:
+        - devops.kacperklimas.com
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      hosts:
+        - devops.kacperklimas.com   # This should match a DNS name in the Certificate
+      tls:
+        mode: SIMPLE
+        credentialName: app-ingress-gateway-cert  # This should match the Certificate secretName
+        minProtocolVersion: TLSV1_2
+        maxProtocolVersion: TLSV1_3

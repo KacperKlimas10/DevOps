@@ -10,16 +10,19 @@ resource "cloudflare_zone" "parcel_platform_zone" {
 
 resource "cloudflare_dns_record" "azure_vpn_dns_record" {
   name    = "vpn"
-  ttl     = 3600
+  ttl     = 1 # Auto TTL for proxied record
   type    = "A"
+  proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "A record for Azure VPN Gateway"
   content = azurerm_public_ip.vpn_public_ip.ip_address
 }
+
 resource "cloudflare_dns_record" "azure_blob_dns_record" {
   name    = "blob"
-  ttl     = 3600
+  ttl     = 1 # Auto TTL for proxied record
   type    = "CNAME"
+  proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "CNAME record for Azure Blob Storage"
   content = data.azurerm_storage_account.azure_storage_account.primary_blob_host
@@ -27,8 +30,9 @@ resource "cloudflare_dns_record" "azure_blob_dns_record" {
 
 resource "cloudflare_dns_record" "azure_registry_dns_record" {
   name    = "registry"
-  ttl     = 3600
+  ttl     = 1 # Auto TTL for proxied record
   type    = "CNAME"
+  proxied = true
   zone_id = cloudflare_zone.parcel_platform_zone.id
   comment = "CNAME record for Azure Container Registry"
   content = data.azurerm_container_registry.azure_container_registry.login_server
@@ -206,27 +210,6 @@ resource "azurerm_virtual_network_peering" "aks_management" {
   use_remote_gateways       = true
 }
 
-# module "azure_node_vnet_route_table" {
-#   source              = "Azure/avm-res-network-routetable/azurerm"
-#   version             = "0.4.1"
-#   location            = var.azure_region
-#   name                = "routetable-azure-node-vnet"
-#   resource_group_name = module.azure_resource_group.name
-#   routes = {
-#     route1 = {
-#       name           = "route-to-vpn-pool"
-#       address_prefix = "172.16.0.0/24"
-#       next_hop_type  = "VnetLocal"
-#     }
-#   }
-#   subnet_resource_ids = {
-#     subnet1 = module.azure_node_vnet.subnets["subnet1"].resource_id
-#     subnet2 = module.azure_node_vnet.subnets["subnet2"].resource_id
-#     subnet3 = module.azure_node_vnet.subnets["subnet3"].resource_id
-#   }
-#   tags = var.azure_application_tags
-# }
-
 module "azure_node_vnet_nsg" {
   source              = "Azure/avm-res-network-networksecuritygroup/azurerm"
   version             = "0.5.0"
@@ -235,7 +218,7 @@ module "azure_node_vnet_nsg" {
   resource_group_name = module.azure_resource_group.name
   security_rules = {
     rule1 = {
-      name                       = "InboundWeb"
+      name                       = "InboundWebTCP"
       priority                   = 100
       protocol                   = "Tcp"
       direction                  = "Inbound"
@@ -253,7 +236,7 @@ module "azure_node_vnet_nsg" {
       access                     = "Allow"
       destination_address_prefix = "*"
       destination_port_range     = "*"
-      source_address_prefix      = "10.1.0.0/24"
+      source_address_prefix      = "172.16.0.0/24" # Allow only from VPN clients
       source_port_range          = "*"
     }
     rule4 = {
@@ -262,13 +245,13 @@ module "azure_node_vnet_nsg" {
       protocol                   = "*"
       direction                  = "Outbound"
       access                     = "Allow"
-      destination_address_prefix = "10.1.0.0/24"
+      destination_address_prefix = "172.16.0.0/24" # Allow only from VPN clients
       destination_port_range     = "*"
       source_address_prefix      = "*"
       source_port_range          = "*"
     }
     rule5 = {
-      name                       = "OutboundWeb"
+      name                       = "OutboundWebTCP"
       priority                   = 150
       protocol                   = "Tcp"
       direction                  = "Outbound"
@@ -276,12 +259,22 @@ module "azure_node_vnet_nsg" {
       destination_address_prefix = "Internet"
       destination_port_range     = "*"
       source_address_prefix      = "*"
-      source_port_range          = "*"
+      source_port_ranges         = ["80", "443", "53"] # HTTP, HTTPS, DNS TCP
+    }
+    rule6 = {
+      name                       = "OutboundWebUDP"
+      priority                   = 200
+      protocol                   = "Udp"
+      direction                  = "Outbound"
+      access                     = "Allow"
+      destination_address_prefix = "Internet"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      source_port_range          = ["53"] # DNS UDP
     }
   }
   tags = var.azure_application_tags
 }
-
 
 module "azure_aks" {
   source              = "Azure/avm-res-containerservice-managedcluster/azurerm"
@@ -386,143 +379,12 @@ data "azurerm_container_registry" "azure_container_registry" {
 
 /* HELM */
 
-resource "helm_release" "kong_gateway_operator" {
-  name             = "kong-operator"
-  repository       = "https://charts.konghq.com"
-  chart            = "kong-operator"
-  namespace        = "kong-system"
-  create_namespace = true
-  set = [
-    {
-      name  = "env.ENABLE_CONTROLLER_KONNECT"
-      value = true
-    },
-    {
-      name  = "global.webhooks.options.certManager.enabled"
-      value = true
-    }
-  ]
-  depends_on = [module.azure_aks, helm_release.cert_manager]
-}
-
-resource "helm_release" "istio_base" {
-  name             = "istio-base"
-  repository       = "https://istio-release.storage.googleapis.com/charts"
-  chart            = "base"
-  namespace        = "istio-system"
-  create_namespace = true
-  set = [
-    {
-      name  = "defaultRevision"
-      value = "default"
-    }
-  ]
-  depends_on = [module.azure_aks]
-}
-
-resource "helm_release" "istio_d" {
-  name             = "istiod"
-  repository       = "https://istio-release.storage.googleapis.com/charts"
-  chart            = "istiod"
-  namespace        = "istio-system"
-  create_namespace = true
-  wait             = true
-  depends_on       = [module.azure_aks]
-}
-
-resource "helm_release" "cert_manager" {
-  name             = "cert-manager"
-  repository       = "https://charts.jetstack.io"
-  chart            = "cert-manager"
-  version          = "v1.19.0"
-  namespace        = "cert-manager"
-  create_namespace = true
-  set = [
-    {
-      name  = "crds.enabled"
-      value = true
-    }
-  ]
-  depends_on = [module.azure_aks]
-}
-
-resource "helm_release" "external_dns" {
-  name             = "external-dns"
-  repository       = "https://kubernetes-sigs.github.io/external-dns/"
-  chart            = "external-dns"
-  namespace        = "external-dns"
-  create_namespace = true
-  values = [
-    <<-EOF
-      apiVersion: v1
-      data:
-        apiKey: ${var.cloudflare_api_token}
-        email: ${var.cloudflare_account_email}
-      kind: Secret
-      metadata:
-        creationTimestamp: null
-        name: cloudflare-api-key
-      ---
-      provider:
-        name: cloudflare
-      env:
-        - name: CF_API_KEY
-        valueFrom:
-          secretKeyRef:
-            name: cloudflare-api-key
-            key: apiKey
-        - name: CF_API_EMAIL
-        valueFrom:
-          secretKeyRef:
-            name: cloudflare-api-key
-            key: email
-    EOF
-  ]
-  depends_on = [module.azure_aks]
-}
-
 resource "helm_release" "argo_cd" {
   name             = "argo-cd"
   repository       = "https://argoproj.github.io/argo-helm"
   chart            = "argo-cd"
+  version          = "9.0.5"
   namespace        = "argocd"
-  create_namespace = true
-  # values = [
-  #   <<-EOF
-  #     redis-ha:
-  #       enabled: true
-  #     controller:
-  #       replicas: 1
-  #     server:
-  #       autoscaling:
-  #         enabled: true
-  #         minReplicas: 2
-  #     repoServer:
-  #       autoscaling:
-  #         enabled: true
-  #         minReplicas: 2
-  #     applicationSet:
-  #       replicas: 2
-  #   EOF
-  # ]
-  depends_on = [module.azure_aks]
-}
-
-resource "helm_release" "vault" {
-  name             = "vault-secrets-operator"
-  repository       = "https://helm.releases.hashicorp.com"
-  chart            = "vault-secrets-operator"
-  version          = "0.10.0"
-  namespace        = "vault-secrets-operator"
-  create_namespace = true
-  depends_on       = [module.azure_aks]
-}
-
-resource "helm_release" "prometheus_stack" {
-  name             = "kube-prometheus-stack"
-  chart            = "kube-prometheus-stack"
-  repository       = "https://prometheus-community.github.io/helm-charts"
-  namespace        = "kube-prometheus-stack"
   create_namespace = true
   depends_on       = [module.azure_aks]
 }

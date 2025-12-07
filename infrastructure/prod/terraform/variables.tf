@@ -1,7 +1,3 @@
-variable "cloudflare_account_email" {
-  type = string
-}
-
 variable "cloudflare_api_token" {
   type      = string
   sensitive = true
@@ -24,7 +20,7 @@ variable "azure_application_tags" {
   type = map(any)
   default = {
     "appname" : "parcelplatform"
-    "env" : "dev"
+    "env" : "prod"
   }
 }
 

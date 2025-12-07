@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: istio-egress-controller
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: gateway
+    repoURL: https://istio-release.storage.googleapis.com/chart
+    targetRevision: 1.27.3
+    helm:
+      releaseName: istio-egressgateway
+      values: |
+        name: istio-egressgateway
+        labels:
+          istio: egressgateway
+        service:
+          type: ClusterIP
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-egress
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    managedNamespaceMetadata:
+      labels:
+        istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
+    syncOptions:
+      - CreateNamespace=true

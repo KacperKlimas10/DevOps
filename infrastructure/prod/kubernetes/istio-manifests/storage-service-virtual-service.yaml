@@ -1,0 +1,27 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: storage-service
+  namespace: prod
+spec:
+  hosts:
+    - devops.kacperklimas.com
+  gateways:
+    - prod/application-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /api/storage
+      route:
+        - destination:
+            host: storage-service.prod.svc.cluster.local
+            subset: v1.0
+          weight: 100   # We declare that all traffic is routed to v1.0 version
+        - destination:
+            host: storage-service.prod.svc.cluster.local
+            subset: v2.0
+          weight: 0
+        - destination:
+            host: storage-service.prod.svc.cluster.local
+            subset: v3.0
+          weight: 0
