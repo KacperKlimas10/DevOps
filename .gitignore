@@ -7,3 +7,4 @@ infrastructure/prod/terraform/.terraform.lock.hcl
 infrastructure/prod/terraform/var.auto.tfvars
 infrastructure/prod/kubernetes/external-dns-manifests/cloudflare-external-dns-secret.yaml
 infrastructure/prod/kubernetes/cert-manager-manifests/cloudflare-cert-manager-secret.yaml
+/infrastructure/prod/terraform/terraform.tfstate.d

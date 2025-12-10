@@ -2,7 +2,7 @@ apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: application-gateway
-  namespace: prod
+  namespace: istio-ingress
 spec:
   selector:
     istio: ingressgateway

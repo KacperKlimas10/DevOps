@@ -9,8 +9,8 @@ spec:
   project: default
   source:
     chart: gateway
-    repoURL: https://istio-release.storage.googleapis.com/chart
-    targetRevision: 1.27.3
+    repoURL: https://istio-release.storage.googleapis.com/charts
+    targetRevision: 1.28.1
     helm:
       releaseName: istio-egressgateway
       values: |
@@ -26,8 +26,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
-    managedNamespaceMetadata:
-      labels:
-        istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
     syncOptions:
       - CreateNamespace=true

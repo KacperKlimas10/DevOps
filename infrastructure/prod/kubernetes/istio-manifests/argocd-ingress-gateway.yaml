@@ -2,17 +2,17 @@ apiVersion: networking.istio.io/v1
 kind: Gateway
 metadata:
   name: argocd-gateway
-  namespace: argocd
+  namespace: istio-ingress
 spec:
   selector:
     istio: ingressgateway
   servers:
     - port:
         number: 80
-        name: http
-        protocol: HTTP
+        name: http2
+        protocol: HTTP2
       hosts:
-        - "argocd.devops.kacperklimas.com"
+        - argocd.devops.kacperklimas.com
       tls:
         httpsRedirect: true
     - port:
@@ -20,11 +20,11 @@ spec:
         name: https
         protocol: HTTPS
       hosts:
-        - "argocd.devops.kacperklimas.com"
+        - argocd.devops.kacperklimas.com
       tls:
         credentialName: management-ingress-gateway-cert
-        maxProtocolVersion: TLSV1_3
         minProtocolVersion: TLSV1_2
+        maxProtocolVersion: TLSV1_3
         mode: SIMPLE
         cipherSuites:
           - ECDHE-ECDSA-AES128-GCM-SHA256

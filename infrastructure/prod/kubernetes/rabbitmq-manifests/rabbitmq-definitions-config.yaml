@@ -1,0 +1,120 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: definitions
+  namespace: rabbitmq-system
+data:
+  definitions.json: |
+    {
+      "rabbit_version": "4.1.3",
+      "rabbitmq_version": "4.1.3",
+      "product_name": "RabbitMQ",
+      "product_version": "4.1.3",
+      "rabbitmq_definition_format": "cluster",
+      "original_cluster_name": "rabbit@6bc371f8de15",
+      "explanation": "Definitions of cluster 'rabbit@6bc371f8de15'",
+      "users": [
+        {
+          "name": "kacper",
+          "password_hash": "XobA9jQb5K9G6A+UwHq/RWAN58HIGLwYqpZgYD4dqM6GWLAj",
+          "hashing_algorithm": "rabbit_password_hashing_sha256",
+          "tags": [
+            "administrator"
+          ],
+          "limits": {}
+        }
+      ],
+      "vhosts": [
+        {
+          "name": "rabbitmq",
+          "description": "Default virtual host",
+          "metadata": {
+            "description": "Default virtual host",
+            "tags": [],
+            "default_queue_type": "classic"
+          },
+          "tags": []
+        }
+      ],
+      "permissions": [
+        {
+          "user": "kacper",
+          "vhost": "rabbitmq",
+          "configure": ".*",
+          "write": ".*",
+          "read": ".*"
+        }
+      ],
+      "topic_permissions": [],
+      "parameters": [],
+      "global_parameters": [
+        {
+          "name": "cluster_tags",
+          "value": []
+        },
+        {
+          "name": "internal_cluster_id",
+          "value": "rabbitmq-cluster-id-FpSFbgGVoZET3M_WCl40pA"
+        }
+      ],
+      "policies": [],
+      "queues": [
+        {
+          "name": "storage-user",
+          "vhost": "rabbitmq",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum"
+          }
+        },
+        {
+          "name": "storage-label",
+          "vhost": "rabbitmq",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum"
+          }
+        },
+        {
+          "name": "user-storage",
+          "vhost": "rabbitmq",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum"
+          }
+        },
+        {
+          "name": "label-storage",
+          "vhost": "rabbitmq",
+          "durable": true,
+          "auto_delete": false,
+          "arguments": {
+            "x-queue-type": "quorum"
+          }
+        }
+      ],
+      "exchanges": [
+        {
+          "name": "storage.events",
+          "vhost": "rabbitmq",
+          "type": "direct",
+          "durable": true,
+          "auto_delete": false,
+          "internal": false,
+          "arguments": {}
+        }
+      ],
+      "bindings": [
+        {
+          "source": "storage.events",
+          "vhost": "rabbitmq",
+          "destination": "storage-user",
+          "destination_type": "queue",
+          "routing_key": "file.uploaded",
+          "arguments": {}
+        }
+      ]
+    }
