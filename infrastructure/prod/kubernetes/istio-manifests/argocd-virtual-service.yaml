@@ -5,9 +5,9 @@ metadata:
   namespace: argocd
 spec:
   hosts:
-    - "argocd.devops.kacperklimas.com"
+    - argocd.devops.kacperklimas.com
   gateways:
-    - argocd-gateway
+    - istio-ingress/argocd-gateway # In the virtual service documentation we can find information how to reference to gateway in other ns
   http:
     - match:
         - uri:

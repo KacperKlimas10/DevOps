@@ -14,7 +14,7 @@ spec:
       hosts:
         - devops.kacperklimas.com
       tls:
-        httpsRedirect: true
+        httpsRedirect: true # Redirect from http to https
     - port:
         number: 443
         name: https

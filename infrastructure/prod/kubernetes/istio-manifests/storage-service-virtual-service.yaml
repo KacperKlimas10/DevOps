@@ -7,7 +7,7 @@ spec:
   hosts:
     - devops.kacperklimas.com
   gateways:
-    - prod/application-gateway
+    - istio-ingress/application-gateway # In the virtual service documentation we can find information how to reference to gateway in other ns
   http:
     - match:
         - uri:
