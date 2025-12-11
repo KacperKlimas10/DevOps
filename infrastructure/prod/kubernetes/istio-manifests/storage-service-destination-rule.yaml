@@ -11,15 +11,15 @@ spec:
     loadBalancer:
       simple: LEAST_REQUEST # We can use other interesting load balancing algorithms
   subsets:
-    - name: v1.0
+    - name: v1
       labels:
         app: storage-service
         version: v1.0
-    - name: v2.0  # For future purposes
+    - name: v2  # For future purposes
       labels:
         app: storage-service
         version: v2.0
-    - name: v3.0  # For future purposes
+    - name: v3  # For future purposes
       labels:
         app: storage-service
         version: v3.0
