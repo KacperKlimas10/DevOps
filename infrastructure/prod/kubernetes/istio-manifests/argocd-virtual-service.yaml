@@ -5,15 +5,15 @@ metadata:
   namespace: argocd
 spec:
   hosts:
-    - "argocd.devops.kacperklimas.com"
+    - devops.kacperklimas.com
   gateways:
-    - argocd-gateway
+    - istio-ingress/application-gateway # In the virtual service documentation we can find information how to reference to gateway in other ns
   http:
     - match:
         - uri:
             prefix: /argocd
       route:
         - destination:
-            host: argocd-server
+            host: argocd-server.argocd.svc.cluster.local
             port:
               number: 80

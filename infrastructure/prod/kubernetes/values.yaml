@@ -1,6 +1,5 @@
-server:   # We need to apply additional config to ArgoCD helm chart to proxy traffic from Istio gateway
+server:   # We need to apply additional config to ArgoCD helm chart to proxy traffic via Istio gateway
   extraArgs:
-    - /usr/local/bin/argocd-server
     - --staticassets
     - /shared/app
     - --redis
@@ -11,4 +10,5 @@ server:   # We need to apply additional config to ArgoCD helm chart to proxy tra
     - --rootpath
     - /argocd
   env:
-    - ARGOCD_MAX_CONCURRENT_LOGIN_REQUESTS_COUNT=0
+    - name: ARGOCD_MAX_CONCURRENT_LOGIN_REQUESTS_COUNT
+      value: "0"

@@ -7,7 +7,7 @@ spec:
   hosts:
     - devops.kacperklimas.com
   gateways:
-    - prod/application-gateway
+    - istio-ingress/application-gateway # In the virtual service documentation we can find information how to reference to gateway in other ns
   http:
     - match:
         - uri:
@@ -15,13 +15,13 @@ spec:
       route:
         - destination:
             host: storage-service.prod.svc.cluster.local
-            subset: v1.0
+            subset: v1
           weight: 100   # We declare that all traffic is routed to v1.0 version
         - destination:
             host: storage-service.prod.svc.cluster.local
-            subset: v2.0
+            subset: v2
           weight: 0
         - destination:
             host: storage-service.prod.svc.cluster.local
-            subset: v3.0
+            subset: v3
           weight: 0
