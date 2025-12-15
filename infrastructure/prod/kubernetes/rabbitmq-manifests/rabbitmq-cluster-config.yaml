@@ -2,6 +2,7 @@ apiVersion: rabbitmq.com/v1beta1
 kind: RabbitmqCluster
 metadata:
   name: devops-project-cluster
+  namespace: rabbitmq-system
 spec:
   replicas: 1
   override:
@@ -22,3 +23,4 @@ spec:
   rabbitmq:
     additionalConfig: |
       load_definitions = /etc/rabbitmq/definitions.json # Path to the mounted definitions file
+      management.path_prefix = /rabbitmq # To route correctly via Gateway with our config we need to set path prefix

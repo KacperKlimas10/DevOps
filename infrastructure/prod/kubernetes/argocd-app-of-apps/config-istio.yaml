@@ -8,7 +8,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  project: default
+  project: devops-project
   source:
     repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing

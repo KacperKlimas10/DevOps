@@ -8,7 +8,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "-3"
 spec:
-  project: default
+  project: devops-project
   source:
     chart: cert-manager
     repoURL: https://charts.jetstack.io

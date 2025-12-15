@@ -6,7 +6,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
+  project: devops-project
   source:
     chart: external-dns
     repoURL: https://kubernetes-sigs.github.io/external-dns/

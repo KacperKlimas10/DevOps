@@ -5,8 +5,10 @@ metadata:
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
 spec:
-  project: default
+  project: devops-project
   source:
     chart: gateway
     repoURL: https://istio-release.storage.googleapis.com/charts
