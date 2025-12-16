@@ -25,9 +25,9 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="auth-service" options="-parameters" />
+      <module name="devops-project" options="" />
       <module name="label-service" options="-parameters" />
       <module name="notification-service" options="-parameters" />
-      <module name="parcel-platform" options="" />
       <module name="pricing-service" options="-parameters" />
       <module name="shared-resources" options="-parameters" />
       <module name="shipment-service" options="-parameters" />

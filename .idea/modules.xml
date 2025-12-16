@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/parcel-platform.iml" filepath="$PROJECT_DIR$/parcel-platform.iml" />
+      <module fileurl="file://$PROJECT_DIR$/devops-project.iml" filepath="$PROJECT_DIR$/devops-project.iml" />
       <module fileurl="file://$PROJECT_DIR$/user-service/user-service.iml" filepath="$PROJECT_DIR$/user-service/user-service.iml" />
     </modules>
   </component>

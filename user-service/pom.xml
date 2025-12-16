@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.parcelplatform</groupId>
-        <artifactId>parcel-platform</artifactId>
+        <groupId>com.devops</groupId>
+        <artifactId>devops-project</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <artifactId>user-service</artifactId>
     <dependencies>
         <dependency>
-            <groupId>com.parcelplatform</groupId>
+            <groupId>com.devops</groupId>
             <artifactId>shared-resources</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
