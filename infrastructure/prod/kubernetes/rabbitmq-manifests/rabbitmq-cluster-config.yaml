@@ -3,6 +3,8 @@ kind: RabbitmqCluster
 metadata:
   name: devops-project-cluster
   namespace: rabbitmq-system
+  labels:
+    istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
 spec:
   replicas: 1
   override:
