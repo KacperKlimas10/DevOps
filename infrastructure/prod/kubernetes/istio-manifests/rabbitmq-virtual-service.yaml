@@ -13,7 +13,7 @@ spec:
         - uri:
             prefix: /rabbitmq/
       rewrite:
-        uri: /rabbitmq/
+        uri: /
       route:
         - destination:
             host: devops-project-cluster.rabbitmq-system.svc.cluster.local

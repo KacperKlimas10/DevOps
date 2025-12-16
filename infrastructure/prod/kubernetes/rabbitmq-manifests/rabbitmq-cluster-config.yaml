@@ -25,4 +25,4 @@ spec:
   rabbitmq:
     additionalConfig: |
       load_definitions = /etc/rabbitmq/definitions.json # Path to the mounted definitions file
-      management.path_prefix = /rabbitmq # To route correctly via Gateway with our config we need to set path prefix
+      management.path_prefix = /rabbitmq/ # To route correctly via Gateway with our config we need to set path prefix
