@@ -249,9 +249,9 @@ module "azure_node_vnet_nsg" {
       direction                  = "Outbound"
       access                     = "Allow"
       destination_address_prefix = "Internet"
-      destination_port_range     = "*"
+      destination_port_ranges    = ["80", "443", "53"] # HTTP, HTTPS, DNS TCP
       source_address_prefix      = "*"
-      source_port_ranges         = ["80", "443", "53"] # HTTP, HTTPS, DNS TCP
+      source_port_range          = "*"
     }
     rule6 = {
       name                       = "OutboundWebUDP"
@@ -260,9 +260,9 @@ module "azure_node_vnet_nsg" {
       direction                  = "Outbound"
       access                     = "Allow"
       destination_address_prefix = "Internet"
-      destination_port_range     = "*"
+      destination_port_range     = "53" # DNS UDP
       source_address_prefix      = "*"
-      source_port_range          = "53" # DNS UDP
+      source_port_range          = "*"
     }
   }
   tags = var.azure_application_tags

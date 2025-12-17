@@ -33,5 +33,5 @@ variable "azure_subscription_id" {
 variable "azure_vpn_path_to_cert" {
   type        = string
   description = "Path to generated DER .CER CA certificate"
-  default     = "certskeys/devopsprojectCA.cer"
+  default     = "certskeys/devopsCA.cer"
 }
