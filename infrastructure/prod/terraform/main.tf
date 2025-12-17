@@ -1,19 +1,11 @@
 /* CLOUDFLARE */
 
-resource "cloudflare_zone" "parcel_platform_zone" {
-  account = {
-    id = var.cloudflare_account_id
-  }
-  name = var.cloudflare_domain_name
-  type = "full"
-}
-
 resource "cloudflare_dns_record" "azure_vpn_dns_record" {
   name    = "vpn"
   ttl     = 1 # Auto TTL for proxied record
   type    = "A"
   proxied = true
-  zone_id = cloudflare_zone.parcel_platform_zone.id
+  zone_id = var.cloudflare_dns_zone_id
   comment = "A record for Azure VPN Gateway"
   content = azurerm_public_ip.vpn_public_ip.ip_address
 }
@@ -23,7 +15,7 @@ resource "cloudflare_dns_record" "azure_blob_dns_record" {
   ttl     = 1 # Auto TTL for proxied record
   type    = "CNAME"
   proxied = true
-  zone_id = cloudflare_zone.parcel_platform_zone.id
+  zone_id = var.cloudflare_dns_zone_id
   comment = "CNAME record for Azure Blob Storage"
   content = data.azurerm_storage_account.azure_storage_account.primary_blob_host
 }
@@ -33,7 +25,7 @@ resource "cloudflare_dns_record" "azure_registry_dns_record" {
   ttl     = 1 # Auto TTL for proxied record
   type    = "CNAME"
   proxied = true
-  zone_id = cloudflare_zone.parcel_platform_zone.id
+  zone_id = var.cloudflare_dns_zone_id
   comment = "CNAME record for Azure Container Registry"
   content = data.azurerm_container_registry.azure_container_registry.login_server
 }
@@ -45,26 +37,26 @@ locals {
   azure_resourcegroup_name = module.azure_naming.resource_group.name_unique
 }
 
-resource "azuread_application" "parcel_platform" {
-  display_name = "parcelplatform"
-  owners       = [data.azuread_client_config.parcel_platform.object_id]
+resource "azuread_application" "devops" {
+  display_name = "devops"
+  owners       = [data.azuread_client_config.devops.object_id]
 }
 
-resource "azuread_service_principal" "parcel_platform" {
-  client_id                    = azuread_application.parcel_platform.client_id
+resource "azuread_service_principal" "devops" {
+  client_id                    = azuread_application.devops.client_id
   app_role_assignment_required = false
-  owners                       = [data.azuread_client_config.parcel_platform.object_id]
+  owners                       = [data.azuread_client_config.devops.object_id]
   feature_tags {
     enterprise = true
     gallery    = true
   }
 }
 
-resource "azuread_service_principal_password" "parcel_platform" {
-  service_principal_id = azuread_service_principal.parcel_platform.id
+resource "azuread_service_principal_password" "devops" {
+  service_principal_id = azuread_service_principal.devops.id
 }
 
-data "azuread_client_config" "parcel_platform" {}
+data "azuread_client_config" "devops" {}
 
 module "azure_naming" {
   source  = "Azure/naming/azurerm"
@@ -124,7 +116,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
     vpn_client_protocols = ["IkeV2", "OpenVPN"]
     address_space        = ["172.16.0.0/24"]
     root_certificate {
-      name             = "ParcelPlatformCA"
+      name             = "devopsCA"
       public_cert_data = replace(file(var.azure_vpn_path_to_cert), "/-.*-/", "")
     }
   }
@@ -143,7 +135,7 @@ module "azure_management_vnet" {
       "8.8.8.8"  # Google DNS
     ]
   }
-  name      = "vnet-parcelplatform-management"
+  name      = "vnet-devops-management"
   parent_id = module.azure_resource_group.resource_id
   subnets = {
     "vpnsubnet" = {
@@ -166,7 +158,7 @@ module "azure_node_vnet" {
       "8.8.8.8"  # Google DNS
     ]
   }
-  name      = "vnet-parcelplatform-aks"
+  name      = "vnet-devops-aks"
   parent_id = module.azure_resource_group.resource_id
   subnets = {
     "subnet1" = {
@@ -270,7 +262,7 @@ module "azure_node_vnet_nsg" {
       destination_address_prefix = "Internet"
       destination_port_range     = "*"
       source_address_prefix      = "*"
-      source_port_range          = ["53"] # DNS UDP
+      source_port_range          = "53" # DNS UDP
     }
   }
   tags = var.azure_application_tags
@@ -329,14 +321,14 @@ module "azure_aks" {
     service_cidr        = "172.16.0.0/24"
     pod_cidr            = "172.17.0.0/16"
   }
-  dns_prefix = "parcelplatform"
+  dns_prefix = "devops"
   linux_profile = {
-    admin_username = "parcelplatform_admin"
+    admin_username = "devops_admin"
     ssh_key        = azurerm_ssh_public_key.azure_aks_key.public_key
   }
   service_principal = {
-    client_id     = azuread_service_principal.parcel_platform.client_id
-    client_secret = azuread_service_principal_password.parcel_platform.value
+    client_id     = azuread_service_principal.devops.client_id
+    client_secret = azuread_service_principal_password.devops.value
   }
   local_account_disabled = false
   tags                   = var.azure_application_tags
@@ -346,7 +338,7 @@ module "azure_storage_account" {
   source                   = "Azure/avm-res-storage-storageaccount/azurerm"
   version                  = "0.6.4"
   location                 = var.azure_region
-  name                     = "parcelplatformblob"
+  name                     = "devopsprojectblob"
   resource_group_name      = module.azure_resource_group.name
   access_tier              = "Hot"
   account_kind             = "BlobStorage"
@@ -379,12 +371,12 @@ data "azurerm_container_registry" "azure_container_registry" {
 
 /* HELM */
 
-resource "helm_release" "argo_cd" {
-  name             = "argo-cd"
-  repository       = "https://argoproj.github.io/argo-helm"
-  chart            = "argo-cd"
-  version          = "9.0.5"
-  namespace        = "argocd"
-  create_namespace = true
-  depends_on       = [module.azure_aks]
-}
+# resource "helm_release" "argo_cd" {
+#   name             = "argo-cd"
+#   repository       = "https://argoproj.github.io/argo-helm"
+#   chart            = "argo-cd"
+#   version          = "9.0.5"
+#   namespace        = "argocd"
+#   create_namespace = true
+#   depends_on       = [module.azure_aks]
+# }

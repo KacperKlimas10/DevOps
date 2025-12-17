@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.13.3"
+  required_version = "~> 1.14.1"
   required_providers {
     cloudflare = {
       source  = "cloudflare/cloudflare"
@@ -30,6 +30,7 @@ provider "cloudflare" {
 provider "azurerm" {
   subscription_id     = var.azure_subscription_id
   storage_use_azuread = true
+  features {}
 }
 
 provider "helm" {

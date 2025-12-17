@@ -1,8 +1,8 @@
 #!/bin/bash
 
-CA_KEY_NAME="parcelplatformCAkey.pem"
-CA_CERT_PEM_NAME="parcelplatformCA.pem"
-CA_CERT_CER_NAME="parcelplatformCA.cer"
+CA_KEY_NAME="devopsCAkey.pem"
+CA_CERT_PEM_NAME="devopsCA.pem"
+CA_CERT_CER_NAME="devopsCA.cer"
 
 CLIENT_KEY_NAME="clientkey.pem"
 CLIENT_REQ_NAME="clientreq.pem"
@@ -19,7 +19,7 @@ function generateRootCert {
 
 function generateClientCert {
  openssl genrsa -out $CLIENT_KEY_NAME 2048 && \
- openssl req -new -key $CLIENT_KEY_NAME -out $CLIENT_REQ_NAME -subj "/CN=ParcelPlatformClient" && \
+ openssl req -new -key $CLIENT_KEY_NAME -out $CLIENT_REQ_NAME -subj "/CN=DevOpsProjectClient" && \
  openssl x509 -req -days 365 -in $CLIENT_REQ_NAME -CA $CA_CERT_PEM_NAME -CAkey $CA_KEY_NAME \
   -CAcreateserial -out $CLIENT_CERT_NAME -extfile <(echo -e "subjectAltName=DNS:$(hostname)\nextendedKeyUsage=clientAuth")
 }
