@@ -4,9 +4,9 @@ metadata:
   name: prometheus-stack
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io  # Cascade delete
 spec:
-  project: default
+  project: devops-project
   source:
     chart: kube-prometheus-stack
     repoURL: https://prometheus-community.github.io/helm-charts

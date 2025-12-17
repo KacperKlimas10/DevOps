@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: rabbitmq-http-virtualservice
+  namespace: rabbitmq-system
+spec:
+  hosts:
+    - devops.kacperklimas.com
+  gateways:
+    - istio-ingress/application-gateway # In the virtual service documentation we can find information how to reference to gateway in other ns
+  http:
+    - match:
+        - uri:
+            prefix: /rabbitmq/
+      rewrite:
+        uri: /
+      route:
+        - destination:
+            host: devops-project-cluster.rabbitmq-system.svc.cluster.local
+            port:
+              number: 15672
+---
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: rabbitmq-tcp-virtualservice
+  namespace: rabbitmq-system
+spec:
+  hosts:
+    - devops-project-cluster.rabbitmq-system.svc.cluster.local
+  tcp:
+    - match:
+        - port: 5672
+      route:
+        - destination:
+            host: devops-project-cluster.rabbitmq-system.svc.cluster.local
+            port:
+              number: 5672

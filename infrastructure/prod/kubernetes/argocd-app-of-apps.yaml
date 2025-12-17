@@ -3,10 +3,8 @@ kind: Application
 metadata:
   name: devops-app
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io  # Cascade delete
 spec:
-  project: default
+  project: devops-project
   source:
     repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing

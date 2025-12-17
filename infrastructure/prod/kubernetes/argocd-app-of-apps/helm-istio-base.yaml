@@ -4,9 +4,9 @@ metadata:
   name: istio-base
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io  # Cascade delete
 spec:
-  project: default
+  project: devops-project
   source:
     chart: base
     repoURL: https://istio-release.storage.googleapis.com/charts
@@ -19,6 +19,11 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
+  ignoreDifferences:  # This feature allows to ignore VWC filed which makes OutOfSync status
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/failurePolicy
   syncPolicy:
     automated:
       prune: true

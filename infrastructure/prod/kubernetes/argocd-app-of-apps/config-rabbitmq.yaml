@@ -8,7 +8,7 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
+  project: devops-project
   source:
     repoURL: https://github.com/KacperKlimas10/DevOps.git
     targetRevision: feature/argocd-testing
@@ -25,6 +25,6 @@ spec:
         app.kubernetes.io/component: rabbitmq-operator
         app.kubernetes.io/name: rabbitmq-system
         app.kubernetes.io/part-of: rabbitmq
-        istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
+        istio-injection: enabled  # To inject sidecar proxy automatically we need set this label
     syncOptions:
       - CreateNamespace=true

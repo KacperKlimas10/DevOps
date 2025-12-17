@@ -4,11 +4,11 @@ metadata:
   name: cert-manager
   namespace: argocd
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io  # Cascade delete
   annotations:
     argocd.argoproj.io/sync-wave: "-3"
 spec:
-  project: default
+  project: devops-project
   source:
     chart: cert-manager
     repoURL: https://charts.jetstack.io
