@@ -8,7 +8,7 @@ server:   # We need to apply additional config to ArgoCD helm chart to proxy tra
     - --staticassets
     - /shared/app
     - --redis
-    - argocd-redis:6379
+    - argo-cd-argocd-redis:6379
     - --insecure
     - --basehref
     - /argocd
