@@ -35,3 +35,9 @@ variable "azure_vpn_path_to_cert" {
   description = "Path to generated DER .CER CA certificate"
   default     = "certskeys/devopsCA.cer"
 }
+
+variable "argocd_path_to_values" {
+  type        = string
+  description = "Path to ArgoCD Helm values.yaml"
+  default     = "../kubernetes/values.yaml"
+}
