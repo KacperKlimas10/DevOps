@@ -11,7 +11,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /rabbitmq/
+            prefix: /rabbitmq
       rewrite:
         uri: /
       route:
