@@ -371,7 +371,7 @@ module "azure_aks" {
   resource_group_name       = module.azure_resource_group.name
   node_resource_group_name  = "rg_devopsproject_node_${local.env}"
   sku_tier                  = "Standard"
-  workload_identity_enabled = true # Enable Workload Identity for Key Vault
+  workload_identity_enabled = true # Enable Workload Identity for Key Vault. In this case we don't have to install it manually via Helm
   oidc_issuer_enabled       = true # For integration with other cloud resources we need to enable OpenID Connect authentication
   default_node_pool = {            # System Node VirtualMachineScaleSets
     name                 = "systemnode"
@@ -480,11 +480,12 @@ data "azurerm_private_endpoint_connection" "key_vault_private_endpoint" {
 module "devops_key_vault" {
   source                        = "Azure/avm-res-keyvault-vault/azurerm"
   version                       = "0.10.2"
-  name                          = module.azure_naming.key_vault.name
+  name                          = "${module.azure_naming.key_vault.name}-${local.env}"
   location                      = var.azure_region
   resource_group_name           = module.azure_resource_group.name
   sku_name                      = "premium"
-  public_network_access_enabled = true # Enable for public access (with enabled firewall) but only for API calls
+  purge_protection_enabled      = false # That option optimizes Key Vault for IaC provisioning, but then we can't restore that Key Vault
+  public_network_access_enabled = true  # Enable for public access (with enabled firewall) but only for API calls
   network_acls = {
     bypass         = "AzureServices"
     ip_rules       = ["${data.http.user_public_ip.body}/32"] # Response body has user public IPv4 address, so we can use it to allow public access for our host.
@@ -504,7 +505,7 @@ module "devops_key_vault" {
   }
   tenant_id = data.azuread_client_config.devops.tenant_id
   role_assignments = {
-    useridentity = {                                  # Assign auth method to Key Vault
+    useridentity = {                                         # Assign auth method to Key Vault
       role_definition_id_or_name = "Key Vault Administrator" # Using built in role on Azure - Key Vault Administrator
       principal_id               = azurerm_user_assigned_identity.devops_key_vault.principal_id
       description                = "KeyVaultUserManagedIdentity"
@@ -533,8 +534,8 @@ module "avm-res-network-private_dns_zone" {
   domain_name = "azure.net" # Vault need to be used with TLS so the only way to establish secured connections is using HTTPS with correct domain
   parent_id   = module.azure_resource_group.resource_id
   a_records = {
-    vault = { # Certificate for Vault is for vault.azure.net domain (wildcard), so that's why we can add custom subdomain
-      name         = "${module.devops_key_vault.name}.vault"  # Previous version had devopsproject subdomain, but then connection with vault weren't been established properly
+    vault = {                                                # Certificate for Vault is for vault.azure.net domain (wildcard), so that's why we can add custom subdomain
+      name         = "${module.devops_key_vault.name}.vault" # Previous version had devopsproject subdomain, but then connection with vault weren't been established properly
       ttl          = 5
       ip_addresses = [local.keyvault_private_endpoint_ip]
     }
@@ -556,7 +557,7 @@ module "avm-res-network-private_dns_zone" {
 
 resource "kubernetes_service_account_v1" "key_vault" { # ServiceAccount for integration with User Managed Identity which has Key Vault permissions
   metadata {
-    name = "key-vault-integration"
+    name      = "key-vault-integration"
     namespace = "external-secrets"
     annotations = {
       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.devops_key_vault.client_id
@@ -574,21 +575,6 @@ resource "kubernetes_namespace_v1" "external-secrets" {
 }
 
 /* HELM */
-
-resource "helm_release" "azure_workload_identity" { # Mutating Admission Webhook for Azure Workload Identity
-  name       = "workload-identity-webhook"
-  repository = "https://azure.github.io/azure-workload-identity/charts"
-  chart      = "workload-identity-webhook"
-  namespace  = "azure-workload-identity-system"
-  set = [
-    {
-      name  = "azureTenantID"
-      value = azurerm_user_assigned_identity.devops_key_vault.tenant_id
-    }
-  ]
-  create_namespace = true
-  depends_on       = [module.azure_aks]
-}
 
 # It's difficult to choose the best way to provide ArgoCD with Terraform :(
 resource "helm_release" "argo_cd" {
