@@ -13,6 +13,10 @@ terraform {
       source  = "hashicorp/azuread"
       version = "3.6.0"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "3.0.1"
+    }
     helm = {
       source  = "hashicorp/helm"
       version = "3.0.2"
@@ -21,6 +25,10 @@ terraform {
       source  = "hashicorp/tls"
       version = "4.0.6"
     }
+    http = {
+      source  = "hashicorp/http"
+      version = "3.5.0"
+    }
   }
 }
 provider "cloudflare" {
@@ -28,9 +36,15 @@ provider "cloudflare" {
 }
 
 provider "azurerm" {
-  subscription_id     = var.azure_subscription_id
-  storage_use_azuread = true
+  subscription_id = var.azure_subscription_id
   features {}
+}
+
+provider "kubernetes" {
+  host                   = module.azure_aks.host
+  client_certificate     = base64decode(module.azure_aks.kube_config[0].client_certificate)
+  client_key             = base64decode(module.azure_aks.kube_config[0].client_key)
+  cluster_ca_certificate = base64decode(module.azure_aks.cluster_ca_certificate)
 }
 
 provider "helm" {

@@ -16,7 +16,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: istio-system
-  ignoreDifferences:  # This feature allows to ignore VWC filed which makes OutOfSync status
+  ignoreDifferences:  # This feature allows to ignore VWC field which makes OutOfSync status
     - group: admissionregistration.k8s.io
       kind: ValidatingWebhookConfiguration
       jsonPointers:

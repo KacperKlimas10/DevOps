@@ -1,9 +1,14 @@
+global:
+  domain: devops.kacperklimas.com # We need to set domain for correct proxying
+configs:
+  cm:
+    statusbadge.enabled: true # -- Enable Status Badge
 server:   # We need to apply additional config to ArgoCD helm chart to proxy traffic via Istio gateway
   extraArgs:
     - --staticassets
     - /shared/app
     - --redis
-    - argocd-redis:6379
+    - argo-cd-argocd-redis:6379
     - --insecure
     - --basehref
     - /argocd
