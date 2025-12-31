@@ -2,12 +2,10 @@ spring:
   application:
     name: "storage-service"
   cloud:
-    azure:
-      storage:
-        blob:
-          account-name: "${AZURE_BLOB_ACCOUNT_NAME:devstoreaccount1}"
-          account-key: "${AZURE_BLOB_ACCOUNT_KEY:Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==}"
-          endpoint: "${AZURE_BLOB_ENDPOINT:http://localhost:10000/devstoreaccount1}"
+    aws:
+      s3:
+        endpoint: "${BUCKET_ENDPOINT:http://localhost:9000}"
+        region: "us-east-1" # Auto region for Minio and R2
   rabbitmq:
     username: "${RABBITMQ_USERNAME:kacper}"
     password: "${RABBITMQ_PASSWORD:kacper}"

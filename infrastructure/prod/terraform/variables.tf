@@ -8,6 +8,11 @@ variable "cloudflare_dns_zone_id" {
   sensitive = true
 }
 
+variable "cloudflare_account_id" {
+  type      = string
+  sensitive = true
+}
+
 variable "azure_application_suffix" {
   type    = list(string)
   default = ["devopsproject"]
