@@ -25,7 +25,7 @@ resource "cloudflare_dns_record" "azure_registry_dns_record" {
 resource "cloudflare_r2_bucket" "devops_r2_bucket" {
   account_id    = var.cloudflare_account_id
   name          = "devopsproject-r2-${local.env}"
-  location      = "eeur"
+  location      = "EEUR"
   storage_class = "Standard"
 }
 
@@ -148,6 +148,7 @@ resource "azurerm_public_ip" "vpn_public_ip" {
   tags                = var.azure_application_tags
 }
 
+# Azure VPN Gateway
 resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   name                = module.azure_naming.virtual_network_gateway.name_unique
   location            = var.azure_region
@@ -171,6 +172,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   tags = var.azure_application_tags
 }
 
+# Azure Virtual Networks
 module "azure_management_vnet" {
   source        = "Azure/avm-res-network-virtualnetwork/azurerm"
   version       = "0.11.0"
@@ -198,6 +200,13 @@ module "azure_management_vnet" {
         id = module.azure_management_vnet_nsg.resource_id
       }
     }
+    # "dbsubnet" = {
+    #   name             = "DatabaseInstancesSubnet"
+    #   address_prefixes = ["10.1.2.0/24"]
+    #   network_security_group = {
+    #     id = module.azure_management_vnet_nsg.resource_id
+    #   }
+    # }
   }
   tags = var.azure_application_tags
 }
@@ -252,6 +261,7 @@ resource "azurerm_virtual_network_peering" "aks_management" {
   depends_on                = [azurerm_virtual_network_gateway.vpn_gateway]
 }
 
+# Azure Network Security Groups
 module "azure_node_vnet_nsg" {
   source              = "Azure/avm-res-network-networksecuritygroup/azurerm"
   version             = "0.5.0"
@@ -384,6 +394,7 @@ module "azure_management_vnet_nsg" {
   tags = var.azure_application_tags
 }
 
+# Azure Managed Kubernetes Cluster
 module "azure_aks" {
   source                    = "Azure/avm-res-containerservice-managedcluster/azurerm"
   version                   = "0.3.0"
@@ -453,6 +464,7 @@ module "azure_aks" {
   tags                   = var.azure_application_tags
 }
 
+# Azure Container Registry
 module "azure_container_registry" {
   source                        = "Azure/avm-res-containerregistry-registry/azurerm"
   version                       = "0.5.0"
@@ -510,6 +522,7 @@ data "azurerm_container_registry" "azure_container_registry" {
 locals {
   keyvault_private_endpoint_ip          = data.azurerm_private_endpoint_connection.key_vault_private_endpoint.private_service_connection[0].private_ip_address
   containerregistry_private_endpoint_ip = data.azurerm_private_endpoint_connection.container_registry_private_endpoint.private_service_connection[0].private_ip_address
+  postgresql_private_endpoint_ip        = data.azurerm_private_endpoint_connection.postgresql_private_endpoint.private_service_connection[0].private_ip_address
   container_registry_aks_password       = module.azure_container_registry.scope_maps["aksscope"].registry_token_passwords["akstoken"].password1[0].value
 }
 
@@ -525,6 +538,13 @@ data "azurerm_private_endpoint_connection" "container_registry_private_endpoint"
   depends_on          = [module.azure_container_registry]
 }
 
+data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
+  name                = "PostgresqlPrivateEndpoint"
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.devops_postgresql]
+}
+
+# Azure Key Vault
 module "devops_key_vault" {
   source                        = "Azure/avm-res-keyvault-vault/azurerm"
   version                       = "0.10.2"
@@ -577,15 +597,79 @@ module "devops_key_vault" {
       name = "aks-acr-password"
       tags = var.azure_application_tags
     }
+    postgresql_uri = {
+      name = "postgresql-uri"
+      tags = var.azure_application_tags
+    }
+    postgresql_user = {
+      name = "postgresql-user"
+      tags = var.azure_application_tags
+    }
+    postgresql_password = {
+      name = "postgresql-password"
+      tags = var.azure_application_tags
+    }
   }
   secrets_value = {
     cloudflare_api_token  = var.cloudflare_api_token
     aks_registry_login    = module.azure_container_registry.name
     aks_registry_password = local.container_registry_aks_password
+    postgresql_uri        = data.azurerm_postgresql_flexible_server.devops_postgresql.fqdn
+    postgresql_user       = data.azurerm_postgresql_flexible_server.devops_postgresql.administrator_login
+    postgresql_password   = random_password.postgresql_admin_password.result
   }
   tags = var.azure_application_tags
 }
 
+# Azure Postgresql Database
+module "devops_postgresql" {
+  source              = "Azure/avm-res-dbforpostgresql-flexibleserver/azurerm"
+  version             = "0.1.4"
+  name                = "${module.azure_naming.postgresql_server.name}-${local.env}"
+  resource_group_name = module.azure_resource_group.name
+  location            = var.azure_region
+  server_version      = "16"                  # Postgresql 18
+  sku_name            = "GP_Standard_D2ds_v4" # 2 vCores, 8 GiB memory, 3750 max iops for Server VM. Depends on Region and current availability
+  storage_mb          = "32768"               # 32 GB on SSD Disk
+  authentication = {
+    password_auth_enabled         = true
+    active_directory_auth_enabled = true
+    tenant_id                     = data.azuread_client_config.devops.tenant_id
+  }
+  administrator_login    = "postgresqluser${local.env}" # Setting admin credentials that will be stored in Key Vault and synced with Kubernetes
+  administrator_password = random_password.postgresql_admin_password.result
+  high_availability = {
+    mode = "SameZone"
+  }
+  zone = "1"  # Need to choose AZ for correct provisioning
+  databases = {
+    devops = {
+      name = "devops"
+    }
+  }
+  public_network_access_enabled = false
+  private_endpoints = {
+    aksendpoint = {
+      name                          = "PostgresqlPrivateEndpoint"
+      location                      = var.azure_region
+      resource_group_name           = module.azure_resource_group.name
+      subnet_resource_id            = module.azure_management_vnet.subnets["endpointsubnet"].resource_id
+      private_dns_zone_group_name   = module.devops_postgresql_private_dns_zone.name
+      private_dns_zone_resource_ids = [module.devops_postgresql_private_dns_zone.resource_id]
+      network_interface_name        = "postgresql-${module.azure_naming.network_interface.name}${local.env}"
+      tags                          = var.azure_application_tags
+    }
+  }
+  tags = var.azure_application_tags
+}
+
+data "azurerm_postgresql_flexible_server" "devops_postgresql" {
+  name                = module.devops_postgresql.name
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.devops_postgresql]
+}
+
+# Private DNS Zones (These are very important because we can use TLS protocol in isolated private Azure network without exposing endpoints outside. Azure usually provides TLS wildcard certs that we can use with resource name as subdomain)
 module "devops_key_vault_private_dns_zone" {
   source      = "Azure/avm-res-network-privatednszone/azurerm"
   version     = "0.4.3"
@@ -614,13 +698,38 @@ module "devops_key_vault_private_dns_zone" {
 module "devops_container_registry_private_dns_zone" {
   source      = "Azure/avm-res-network-privatednszone/azurerm"
   version     = "0.4.3"
-  domain_name = "azurecr.io" #
+  domain_name = "azurecr.io"
   parent_id   = module.azure_resource_group.resource_id
   a_records = {
     acr = {
       name         = module.azure_container_registry.name
       ttl          = 5
       ip_addresses = [local.containerregistry_private_endpoint_ip]
+    }
+  }
+  virtual_network_links = {
+    aks = {
+      vnetlinkname       = "aksvnetlink"
+      virtual_network_id = module.azure_node_vnet.resource_id
+    }
+    management = {
+      vnetlinkname       = "managementvnetlink"
+      virtual_network_id = module.azure_management_vnet.resource_id
+    }
+  }
+  tags = var.azure_application_tags
+}
+
+module "devops_postgresql_private_dns_zone" {
+  source      = "Azure/avm-res-network-privatednszone/azurerm"
+  version     = "0.4.3"
+  domain_name = "postgres.database.azure.com"
+  parent_id   = module.azure_resource_group.resource_id
+  a_records = {
+    db = {
+      name         = module.devops_postgresql.name
+      ttl          = 5
+      ip_addresses = [local.postgresql_private_endpoint_ip]
     }
   }
   virtual_network_links = {
@@ -682,4 +791,11 @@ data "http" "user_public_ip" { # Using HTTP query for getting user public IPv4
     max_delay_ms = 1000
     min_delay_ms = 500
   }
+}
+
+# Random password for Azure Postgresql Admin account
+resource "random_password" "postgresql_admin_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
