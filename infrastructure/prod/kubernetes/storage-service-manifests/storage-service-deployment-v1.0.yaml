@@ -6,10 +6,6 @@ metadata:
   labels:
     app: storage-service
     version: v1.0
-  annotations:
-    prometheus.io/scrape: 'true'
-    prometheus.io/path: '/actuator/prometheus'
-    prometheus.io/port: '8080'
 spec:
   selector:
     matchLabels:
@@ -22,6 +18,8 @@ spec:
         app: storage-service
         version: v1.0
     spec:
+      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
+        - name: azurecr-credentials
       containers:
         - name: storage-service
           image: storage-service:dev
