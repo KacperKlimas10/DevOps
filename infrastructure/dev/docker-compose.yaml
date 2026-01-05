@@ -59,7 +59,7 @@ services:
     environment:
       SERVER_PORT: 8080
       RABBITMQ_HOST: rabbitmq
-      POSTGRESQL_URL: jdbc:postgresql://postgresql/devops
+      POSTGRESQL_URI: jdbc:postgresql://postgresql/devops
     networks:
       - backend-network
       - db-network

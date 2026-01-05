@@ -24,6 +24,26 @@ spec:
         - name: user-service
           image: acrdevopsprojectprod.azurecr.io/user-service:dev
           imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: RABBITMQ_HOST
+              value: devops-project-cluster.rabbitmq-system.svc.cluster.local
+            - name: POSTGRESQL_URI
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-credentials
+                  key: postgresql.uri
+            - name: POSTGRESQL_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-credentials
+                  key: postgresql.username
+            - name: POSTGRESQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-credentials
+                  key: postgresql.password
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -45,5 +65,5 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
+      restartPolicy: Always
       serviceAccountName: user-service
-      restartPolicy: OnFailure

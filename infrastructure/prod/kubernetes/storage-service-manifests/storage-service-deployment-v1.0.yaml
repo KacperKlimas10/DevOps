@@ -24,6 +24,26 @@ spec:
         - name: storage-service
           image: acrdevopsprojectprod.azurecr.io/storage-service:dev
           imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: RABBITMQ_HOST
+              value: devops-project-cluster.rabbitmq-system.svc.cluster.local
+            - name: BUCKET_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-r2-credentials
+                  key: apiUri
+            - name: BUCKET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-r2-credentials
+                  key:  accessKeyId
+            - name: BUCKET_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-r2-credentials
+                  key: secretAccessKey
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -45,5 +65,5 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
+      restartPolicy: Always
       serviceAccountName: storage-service
-      restartPolicy: OnFailure
