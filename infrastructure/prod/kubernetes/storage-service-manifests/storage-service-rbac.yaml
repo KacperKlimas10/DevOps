@@ -4,7 +4,7 @@ metadata:
   name: storage-service-read-secrets
   namespace: prod
 rules:
-  - apiGroups: [ "v1" ]
+  - apiGroups: [ "" ]
     resources: [ "secrets" ]
     verbs: [get, list]
 ---
@@ -14,8 +14,7 @@ metadata:
   name: read-secrets
   namespace: prod
 subjects:
-  - apiGroup: v1
-    kind: ServiceAccount
+  - kind: ServiceAccount
     name: storage-service
 roleRef:
   apiGroup: rbac.authorization.k8s.io
