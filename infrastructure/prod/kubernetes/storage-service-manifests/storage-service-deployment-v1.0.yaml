@@ -22,7 +22,7 @@ spec:
         - name: azurecr-credentials
       containers:
         - name: storage-service
-          image: storage-service:dev
+          image: acrdevopsprojectprod.azurecr.io/storage-service:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -46,4 +46,4 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 10
       serviceAccountName: storage-service
-      restartPolicy: Always
+      restartPolicy: OnFailure

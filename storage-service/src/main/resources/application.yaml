@@ -3,15 +3,18 @@ spring:
     name: "storage-service"
   cloud:
     aws:
+      credentials:
+        access-key: "${BUCKET_ACCESS_KEY}:kacperkacper"
+        secret-key: "${BUCKET_SECRET_KEY}:kacperkacper"
       s3:
         endpoint: "${BUCKET_ENDPOINT:http://localhost:9000}"
-        region: "us-east-1" # Auto region for Minio and R2
+        region: "${BUCKET_REGION}:us-east-1" # Auto region for Minio and R2
   rabbitmq:
     username: "${RABBITMQ_USERNAME:kacper}"
     password: "${RABBITMQ_PASSWORD:kacper}"
+    virtual-host: "${RABBITMQ_VHOST:rabbitmq}"
     host: "${RABBITMQ_HOST:localhost}"
     port: "${RABBITMQ_PORT:5672}"
-    virtual-host: "${RABBITMQ_VHOST:rabbitmq}"
     template:
       retry:
         enabled: true

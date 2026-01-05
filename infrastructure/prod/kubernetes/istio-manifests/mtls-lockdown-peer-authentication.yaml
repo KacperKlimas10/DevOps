@@ -5,4 +5,4 @@ metadata:
   namespace: istio-system
 spec:
   mtls:
-    mode: PERMISSIVE  # Lock down workloads in all namespaces to prioritise accept mTLS traffic
+    mode: STRICT  # Lock down workloads in all namespaces to prioritise accept mTLS traffic

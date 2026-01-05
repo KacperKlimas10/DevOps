@@ -35,7 +35,7 @@ resource "cloudflare_r2_custom_domain" "devops_r2_custom_domain" {
   domain      = "r2storage-${local.env}.kacperklimas.com"
   enabled     = true
   zone_id     = var.cloudflare_dns_zone_id
-  min_tls     = "1.2"
+  min_tls     = "1.2" # What's interesting R2 resource block use TLS 1.0 as default minimum version which is not recommended and can cause major security issues, so we need to change to TLS 1.2
 }
 
 /* AZURE */
@@ -200,13 +200,6 @@ module "azure_management_vnet" {
         id = module.azure_management_vnet_nsg.resource_id
       }
     }
-    # "dbsubnet" = {
-    #   name             = "DatabaseInstancesSubnet"
-    #   address_prefixes = ["10.1.2.0/24"]
-    #   network_security_group = {
-    #     id = module.azure_management_vnet_nsg.resource_id
-    #   }
-    # }
   }
   tags = var.azure_application_tags
 }
@@ -584,12 +577,20 @@ module "devops_key_vault" {
       description                = "KeyVaultDefaultClient"
     }
   }
-  secrets = { # Create secret for Kubernetes external dns and cert manager
+  secrets = { # Create secret for Kubernetes external dns and cert manager whole workload
+    cloudflare_r2_api_uri = {
+      name = "cloudflare-r2-api-uri"
+      tags = var.azure_application_tags
+    }
+    cloudflare_r2_account_id = {
+      name = "cloudflare-r2-account-id"
+      tags = var.azure_application_tags
+    }
     cloudflare_api_token = {
       name = "cloudflare-api-token"
       tags = var.azure_application_tags
     }
-    aks_registry_login = {
+    aks_registry_token = {
       name = "aks-acr-token"
       tags = var.azure_application_tags
     }
@@ -601,8 +602,8 @@ module "devops_key_vault" {
       name = "postgresql-uri"
       tags = var.azure_application_tags
     }
-    postgresql_user = {
-      name = "postgresql-user"
+    postgresql_username = {
+      name = "postgresql-username"
       tags = var.azure_application_tags
     }
     postgresql_password = {
@@ -611,12 +612,14 @@ module "devops_key_vault" {
     }
   }
   secrets_value = {
-    cloudflare_api_token  = var.cloudflare_api_token
-    aks_registry_login    = module.azure_container_registry.name
-    aks_registry_password = local.container_registry_aks_password
-    postgresql_uri        = data.azurerm_postgresql_flexible_server.devops_postgresql.fqdn
-    postgresql_user       = data.azurerm_postgresql_flexible_server.devops_postgresql.administrator_login
-    postgresql_password   = random_password.postgresql_admin_password.result
+    cloudflare_r2_api_uri    = "https://${cloudflare_r2_custom_domain.devops_r2_custom_domain.domain}/${cloudflare_r2_bucket.devops_r2_bucket.name}"
+    cloudflare_r2_account_id = var.cloudflare_account_id
+    cloudflare_api_token     = var.cloudflare_api_token
+    aks_registry_token       = module.azure_container_registry.name
+    aks_registry_password    = local.container_registry_aks_password
+    postgresql_uri           = data.azurerm_postgresql_flexible_server.devops_postgresql.fqdn
+    postgresql_username      = data.azurerm_postgresql_flexible_server.devops_postgresql.administrator_login
+    postgresql_password      = random_password.postgresql_admin_password.result
   }
   tags = var.azure_application_tags
 }
@@ -628,7 +631,7 @@ module "devops_postgresql" {
   name                = "${module.azure_naming.postgresql_server.name}-${local.env}"
   resource_group_name = module.azure_resource_group.name
   location            = var.azure_region
-  server_version      = "16"                  # Postgresql 18
+  server_version      = "16"                  # Postgresql 16
   sku_name            = "GP_Standard_D2ds_v4" # 2 vCores, 8 GiB memory, 3750 max iops for Server VM. Depends on Region and current availability
   storage_mb          = "32768"               # 32 GB on SSD Disk
   authentication = {
@@ -641,7 +644,7 @@ module "devops_postgresql" {
   high_availability = {
     mode = "SameZone"
   }
-  zone = "1"  # Need to choose AZ for correct provisioning
+  zone = "1" # Need to choose AZ for correct provisioning
   databases = {
     devops = {
       name = "devops"

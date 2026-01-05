@@ -22,7 +22,7 @@ spec:
         - name: azurecr-credentials
       containers:
         - name: user-service
-          image: user-service:dev
+          image: acrdevopsprojectprod.azurecr.io/user-service:dev
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -46,4 +46,4 @@ spec:
             initialDelaySeconds: 15
             periodSeconds: 10
       serviceAccountName: user-service
-      restartPolicy: Always
+      restartPolicy: OnFailure

@@ -13,7 +13,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class StorageService {
 
-    @Qualifier("BlobStorage")
+    @Qualifier("R2Storage")
     private final StorageRepository storageRepository;
 
     public FileUploadResponseDto fileUploadRequest(FileUploadRequestDto fileUploadRequestDto) {
