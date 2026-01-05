@@ -1,0 +1,23 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: storage-service-read-secrets
+  namespace: prod
+rules:
+  - apiGroups: [ "v1" ]
+    resources: [ "secrets" ]
+    verbs: [get, list]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-secrets
+  namespace: prod
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: ServiceAccount
+    name: storage-service
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: storage-service-read-secrets
