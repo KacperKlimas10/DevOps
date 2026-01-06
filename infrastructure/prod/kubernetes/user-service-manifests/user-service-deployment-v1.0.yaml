@@ -18,8 +18,6 @@ spec:
         app: user-service
         version: v1.0
     spec:
-      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
-        - name: azurecr-credentials
       containers:
         - name: user-service
           image: acrdevopsprojectprod.azurecr.io/user-service:dev
@@ -33,17 +31,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: postgresql-credentials
-                  key: postgresql.uri
+                  key: uri
             - name: POSTGRESQL_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: postgresql-credentials
-                  key: postgresql.username
+                  key: username
             - name: POSTGRESQL_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: postgresql-credentials
-                  key: postgresql.password
+                  key: password
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -65,5 +63,7 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
+      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
+        - name: azurecr-credentials
       restartPolicy: Always
       serviceAccountName: user-service

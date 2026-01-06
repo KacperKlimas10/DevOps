@@ -18,8 +18,6 @@ spec:
         app: storage-service
         version: v1.0
     spec:
-      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
-        - name: azurecr-credentials
       containers:
         - name: storage-service
           image: acrdevopsprojectprod.azurecr.io/storage-service:dev
@@ -65,5 +63,7 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
+      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
+        - name: azurecr-credentials
       restartPolicy: Always
       serviceAccountName: storage-service

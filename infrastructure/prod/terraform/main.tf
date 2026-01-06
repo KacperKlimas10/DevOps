@@ -517,28 +517,10 @@ data "azurerm_container_registry" "azure_container_registry" {
 }
 
 locals {
-  keyvault_private_endpoint_ip          = data.azurerm_private_endpoint_connection.key_vault_private_endpoint.private_service_connection[0].private_ip_address
-  containerregistry_private_endpoint_ip = data.azurerm_private_endpoint_connection.container_registry_private_endpoint.private_service_connection[0].private_ip_address
-  postgresql_private_endpoint_ip        = data.azurerm_private_endpoint_connection.postgresql_private_endpoint.private_service_connection[0].private_ip_address
-  container_registry_aks_password       = module.azure_container_registry.scope_maps["aksscope"].registry_token_passwords["akstoken"].password1[0].value
-}
-
-data "azurerm_private_endpoint_connection" "key_vault_private_endpoint" {
-  name                = "KeyVaultPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.devops_key_vault]
-}
-
-data "azurerm_private_endpoint_connection" "container_registry_private_endpoint" {
-  name                = "ContainerRegistryPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.azure_container_registry]
-}
-
-data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
-  name                = "PostgresqlPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.devops_postgresql]
+  keyvault_private_endpoint_ip        = data.azurerm_private_endpoint_connection.key_vault_private_endpoint.private_service_connection[0].private_ip_address
+  postgresql_private_endpoint_ip      = data.azurerm_private_endpoint_connection.postgresql_private_endpoint.private_service_connection[0].private_ip_address
+  container_registry_main_endpoint_ip = data.azurerm_network_interface.container_registry_main_private_endpoint.private_ip_addresses[1] # This is a list, fist address is matching .data subdomain so if we need to retrieve address for main subdomain it must select second address in a list
+  container_registry_aks_password     = module.azure_container_registry.scope_maps["aksscope"].registry_token_passwords["akstoken"].password1[0].value
 }
 
 # Azure Key Vault
@@ -675,10 +657,28 @@ module "devops_postgresql" {
   tags = var.azure_application_tags
 }
 
+# In  this section we need to retrieve IPv4 addresses from Private Endpoint configurations
 data "azurerm_postgresql_flexible_server" "devops_postgresql" {
   name                = module.devops_postgresql.name
   resource_group_name = module.azure_resource_group.name
   depends_on          = [module.devops_postgresql]
+}
+
+data "azurerm_private_endpoint_connection" "key_vault_private_endpoint" {
+  name                = "KeyVaultPrivateEndpoint"
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.devops_key_vault]
+}
+
+data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
+  name                = "PostgresqlPrivateEndpoint"
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.devops_postgresql]
+}
+
+data "azurerm_network_interface" "container_registry_main_private_endpoint" {
+  name                = "containerregistry-${module.azure_naming.network_interface.name}${local.env}"
+  resource_group_name = module.azure_resource_group.name
 }
 
 # Private DNS Zones (These are very important because we can use TLS protocol in isolated private Azure network without exposing endpoints outside. Azure usually provides TLS wildcard certs that we can use with resource name as subdomain)
@@ -712,11 +712,11 @@ module "devops_container_registry_private_dns_zone" {
   version     = "0.4.3"
   domain_name = "azurecr.io"
   parent_id   = module.azure_resource_group.resource_id
-  a_records = {
-    acr = {
+  a_records = { # I don't know why ACR module enter primary (data) Private DNS record automatically, I had some bugs with that because methods used in other resources (DB, Key Vault) are using one IPv4 address and one domain per resource. I couldn't pull images from registry because DNS records weren't configured correctly
+    acr_io = {
       name         = module.azure_container_registry.name
       ttl          = 5
-      ip_addresses = [local.containerregistry_private_endpoint_ip]
+      ip_addresses = [local.container_registry_main_endpoint_ip]
     }
   }
   virtual_network_links = {
