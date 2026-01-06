@@ -457,6 +457,10 @@ module "azure_aks" {
   tags                   = var.azure_application_tags
 }
 
+locals { # Local variable to pass in ACR config and Secret config
+  aks_acr_token = "aks-token"
+}
+
 # Azure Container Registry
 module "azure_container_registry" {
   source                        = "Azure/avm-res-containerregistry-registry/azurerm"
@@ -481,7 +485,7 @@ module "azure_container_registry" {
       description = "Read only all repositories"
       registry_tokens = {
         akstoken = {
-          name = "aks-token"
+          name = local.aks_acr_token
           passwords = {
             password1 = { # Expiration date for token password
               expiry = "2026-12-31T00:00:00Z"
@@ -590,6 +594,10 @@ module "devops_key_vault" {
       name = "cloudflare-api-token"
       tags = var.azure_application_tags
     }
+    acr_name = {
+      name = "acr-name"
+      tags = var.azure_application_tags
+    }
     aks_registry_token = {
       name = "aks-acr-token"
       tags = var.azure_application_tags
@@ -615,7 +623,8 @@ module "devops_key_vault" {
     cloudflare_r2_api_uri    = "https://${cloudflare_r2_custom_domain.devops_r2_custom_domain.domain}/${cloudflare_r2_bucket.devops_r2_bucket.name}"
     cloudflare_r2_account_id = var.cloudflare_account_id
     cloudflare_api_token     = var.cloudflare_api_token
-    aks_registry_token       = module.azure_container_registry.name
+    acr_name                 = module.azure_container_registry.name
+    aks_registry_token       = local.aks_acr_token # Here we need to pass ACR token name
     aks_registry_password    = local.container_registry_aks_password
     postgresql_uri           = data.azurerm_postgresql_flexible_server.devops_postgresql.fqdn
     postgresql_username      = data.azurerm_postgresql_flexible_server.devops_postgresql.administrator_login
