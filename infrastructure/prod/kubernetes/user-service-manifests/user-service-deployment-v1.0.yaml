@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: acrdevopsprojectprod.azurecr.io/user-service:dev
+          image: acrdevopsprojectprod.azurecr.io/user-service:v1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: SERVER_PORT

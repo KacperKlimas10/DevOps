@@ -4,6 +4,8 @@ configs:
   cm:
     statusbadge.enabled: true # -- Enable Status Badge
 server:   # We need to apply additional config to ArgoCD helm chart to proxy traffic via Istio gateway
+  podLabels:
+    sidecar.istio.io/inject: true  # We are injecting Istio Envoy Proxy Sidecar here using annotation for pods. Only for ArgoCD Server because is used with Ingress Gateway for now
   extraArgs:
     - --staticassets
     - /shared/app

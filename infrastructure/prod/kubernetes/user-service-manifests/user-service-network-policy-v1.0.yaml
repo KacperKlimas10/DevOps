@@ -10,11 +10,14 @@ spec:
       version: v1.0
   policyTypes:
     - Ingress
+    - Egress
   ingress:
-    - from:
-        - namespaceSelector:
-            matchLabels:
-              kubernetes.io/metadata.name: prod
-      ports:
+    - ports:
         - protocol: TCP
-          port: 8080
+          port: 8080  # Service port
+  egress:
+    - ports:
+        - protocol: TCP
+          port: 5672  # Default RabbitMQ broker port
+        - protocol: TCP
+          port: 5432  # Default Postgresql port
