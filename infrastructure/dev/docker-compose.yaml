@@ -28,7 +28,7 @@ services:
   # MICROSERVICES
 
   storage-service:
-    image: storage-service:dev
+    image: storage-service:v1.0
     build:
       context: ../../storage-service
       dockerfile: Dockerfile
@@ -51,7 +51,7 @@ services:
       start_interval: 5s
 
   user-service:
-    image: user-service:dev
+    image: user-service:v1.0
     build:
       context: ../../user-service
       dockerfile: Dockerfile
