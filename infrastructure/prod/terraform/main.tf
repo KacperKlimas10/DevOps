@@ -679,6 +679,7 @@ data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
 data "azurerm_network_interface" "container_registry_main_private_endpoint" {
   name                = "containerregistry-${module.azure_naming.network_interface.name}${local.env}"
   resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.azure_container_registry]
 }
 
 # Private DNS Zones (These are very important because we can use TLS protocol in isolated private Azure network without exposing endpoints outside. Azure usually provides TLS wildcard certs that we can use with resource name as subdomain)
@@ -712,13 +713,13 @@ module "devops_container_registry_private_dns_zone" {
   version     = "0.4.3"
   domain_name = "azurecr.io"
   parent_id   = module.azure_resource_group.resource_id
-  a_records = { # I don't know why ACR module enter primary (data) Private DNS record automatically, I had some bugs with that because methods used in other resources (DB, Key Vault) are using one IPv4 address and one domain per resource. I couldn't pull images from registry because DNS records weren't configured correctly
-    acr_io = {
-      name         = module.azure_container_registry.name
-      ttl          = 5
-      ip_addresses = [local.container_registry_main_endpoint_ip]
-    }
-  }
+  # a_records = { # I don't know why ACR module enter primary (data) Private DNS record automatically, I had some bugs with that because methods used in other resources (DB, Key Vault) are using one IPv4 address and one domain per resource. I couldn't pull images from registry because DNS records weren't configured correctly
+  #   acr_io = {
+  #     name         = module.azure_container_registry.name
+  #     ttl          = 5
+  #     ip_addresses = [local.container_registry_main_endpoint_ip]
+  #   }
+  # }
   virtual_network_links = {
     aks = {
       vnetlinkname       = "aksvnetlink"
@@ -737,13 +738,13 @@ module "devops_postgresql_private_dns_zone" {
   version     = "0.4.3"
   domain_name = "postgres.database.azure.com"
   parent_id   = module.azure_resource_group.resource_id
-  a_records = {
-    db = {
-      name         = module.devops_postgresql.name
-      ttl          = 5
-      ip_addresses = [local.postgresql_private_endpoint_ip]
-    }
-  }
+  # a_records = { # Same problem as with ACR
+  #   db = {
+  #     name         = module.devops_postgresql.name
+  #     ttl          = 5
+  #     ip_addresses = [local.postgresql_private_endpoint_ip]
+  #   }
+  # }
   virtual_network_links = {
     aks = {
       vnetlinkname       = "aksvnetlink"

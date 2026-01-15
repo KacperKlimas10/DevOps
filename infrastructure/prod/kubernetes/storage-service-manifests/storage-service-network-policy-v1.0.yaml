@@ -19,5 +19,3 @@ spec:
     - ports:
         - protocol: TCP
           port: 5672  # Default RabbitMQ broker port
-        - protocol: TCP
-          port: 5432  # Default Postgresql port

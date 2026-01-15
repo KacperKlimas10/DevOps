@@ -14,7 +14,7 @@ spec:
   ingress:
     - ports:
         - protocol: TCP
-          port: 8080  # Service port
+          port: 8080  # Service HTTP port
   egress:
     - ports:
         - protocol: TCP

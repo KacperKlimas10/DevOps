@@ -10,8 +10,8 @@ spec:
       spec:
         template:
           metadata:
-            labels:
-              sidecar.istio.io/inject: true  # To inject sidecar proxy automatically we need to set this label (Pod level) That way we prevent injecting to deployments where there is no need
+            labels: # To inject sidecar proxy automatically we need to set this label (Pod level) That way we prevent injecting to deployments where there is no need
+              sidecar.istio.io/inject: "true" # Same problem as with ArgoCD but I found solution :)
           spec:
             containers:
               - name: rabbitmq
