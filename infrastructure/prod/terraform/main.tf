@@ -482,7 +482,7 @@ module "azure_container_registry" {
     aksscope = {
       name        = "aks-scope" # Authorization read only (Pulling images, reading statuses etc)
       actions     = ["repositories/*/content/read", "repositories/*/metadata/read"]
-      description = "Read only all repositories"
+      description = "Read-only all repositories"
       registry_tokens = {
         akstoken = {
           name = local.aks_acr_token
