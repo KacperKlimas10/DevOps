@@ -1,34 +1,9 @@
 services:
 
-  # API GATEWAY
-
-  kong-cp:
-    image: '${GW_IMAGE:-kong/kong-gateway:3.11.0.2}'
-    restart: on-failure
-    environment:
-      KONG_DATABASE: off
-      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yaml
-      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
-      KONG_ADMIN_GUI_LISTEN: 0.0.0.0:8002, 0.0.0.0:8445 ssl
-      KONG_ADMIN_GUI_URL: http://${GW_HOST:-localhost}:8002
-      KONG_PASSWORD: handyshake
-    ports:
-      - "8000:8000"  # Proxy HTTP
-      - "8443:8443"  # Proxy HTTPS
-      - "8001:8001"  # Admin API HTTP
-      - "8444:8444"  # Admin API HTTPS
-      - "8002:8002"  # Kong Manager HTTP
-      - "8445:8445"  # Kong Manager HTTPS
-    networks:
-      - backend-network
-    volumes:
-      - ./kong/kong.yaml:/kong/declarative/kong.yaml
-    command: kong start
-
   # MICROSERVICES
 
   storage-service:
-    image: storage-service:v1.0
+    image: acrdevopsprojectprod.azurecr.io/storage-service:v1.0
     build:
       context: ../../storage-service
       dockerfile: Dockerfile
@@ -38,6 +13,8 @@ services:
       RABBITMQ_HOST: rabbitmq
       BUCKET_ENDPOINT: http://minio:9000
       AWS_BUCKET_NAME : devops
+    ports:
+      - "8080:8080"
     networks:
       - backend-network
       - db-network
@@ -51,7 +28,7 @@ services:
       start_interval: 5s
 
   user-service:
-    image: user-service:v1.0
+    image: acrdevopsprojectprod.azurecr.io/user-service:v1.0
     build:
       context: ../../user-service
       dockerfile: Dockerfile
@@ -60,6 +37,8 @@ services:
       SERVER_PORT: 8080
       RABBITMQ_HOST: rabbitmq
       POSTGRESQL_URI: jdbc:postgresql://postgresql/devops
+    ports:
+      - "8081:8080"
     networks:
       - backend-network
       - db-network
@@ -151,7 +130,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: kacper@kacper.pl
       PGADMIN_DEFAULT_PASSWORD: kacper
     ports:
-      - "8080:80"
+      - "8880:80"
     networks:
       - db-network
     volumes:
@@ -161,7 +140,7 @@ services:
     image: mongo-express:latest
     restart: on-failure
     ports:
-      - "8081:8081"
+      - "8881:8081"
     environment:
       ME_CONFIG_MONGODB_ADMINUSERNAME: kacper
       ME_CONFIG_MONGODB_ADMINPASSWORD: kacper

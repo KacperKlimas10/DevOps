@@ -155,7 +155,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   resource_group_name = module.azure_resource_group.name
   type                = "Vpn"
   generation          = "Generation1"
-  sku                 = "VpnGw2AZ"
+  sku                 = "VpnGw2AZ"  # Zone-redundant gateway
   ip_configuration {
     public_ip_address_id = azurerm_public_ip.vpn_public_ip.id
     subnet_id            = module.azure_management_vnet.subnets["vpnsubnet"].resource_id
@@ -165,7 +165,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
     vpn_client_protocols = ["IkeV2", "OpenVPN"]
     address_space        = ["172.16.0.0/24"]
     root_certificate {
-      name             = "devopsCA"
+      name             = "devopsCA" # Azure documentation says if we want to use self generated certificate we need to take part without --BEGIN CERTIFICATE-- and --END CERTIFICATE-- lines, so we use regular expressions to do that.
       public_cert_data = replace(file(var.azure_vpn_path_to_cert), "/-.*-/", "")
     }
   }
