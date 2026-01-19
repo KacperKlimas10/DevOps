@@ -35,7 +35,7 @@ resource "cloudflare_r2_custom_domain" "devops_r2_custom_domain" {
   domain      = "r2storage-${local.env}.kacperklimas.com"
   enabled     = true
   zone_id     = var.cloudflare_dns_zone_id
-  min_tls     = "1.2"
+  min_tls     = "1.2" # What's interesting R2 resource block use TLS 1.0 as default minimum version which is not recommended and can cause major security issues, so we need to change to TLS 1.2
 }
 
 /* AZURE */
@@ -155,7 +155,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   resource_group_name = module.azure_resource_group.name
   type                = "Vpn"
   generation          = "Generation1"
-  sku                 = "VpnGw2AZ"
+  sku                 = "VpnGw2AZ"  # Zone-redundant gateway
   ip_configuration {
     public_ip_address_id = azurerm_public_ip.vpn_public_ip.id
     subnet_id            = module.azure_management_vnet.subnets["vpnsubnet"].resource_id
@@ -165,7 +165,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
     vpn_client_protocols = ["IkeV2", "OpenVPN"]
     address_space        = ["172.16.0.0/24"]
     root_certificate {
-      name             = "devopsCA"
+      name             = "devopsCA" # Azure documentation says if we want to use self generated certificate we need to take part without --BEGIN CERTIFICATE-- and --END CERTIFICATE-- lines, so we use regular expressions to do that.
       public_cert_data = replace(file(var.azure_vpn_path_to_cert), "/-.*-/", "")
     }
   }
@@ -200,13 +200,6 @@ module "azure_management_vnet" {
         id = module.azure_management_vnet_nsg.resource_id
       }
     }
-    # "dbsubnet" = {
-    #   name             = "DatabaseInstancesSubnet"
-    #   address_prefixes = ["10.1.2.0/24"]
-    #   network_security_group = {
-    #     id = module.azure_management_vnet_nsg.resource_id
-    #   }
-    # }
   }
   tags = var.azure_application_tags
 }
@@ -464,6 +457,10 @@ module "azure_aks" {
   tags                   = var.azure_application_tags
 }
 
+locals { # Local variable to pass in ACR config and Secret config
+  aks_acr_token = "aks-token"
+}
+
 # Azure Container Registry
 module "azure_container_registry" {
   source                        = "Azure/avm-res-containerregistry-registry/azurerm"
@@ -485,10 +482,10 @@ module "azure_container_registry" {
     aksscope = {
       name        = "aks-scope" # Authorization read only (Pulling images, reading statuses etc)
       actions     = ["repositories/*/content/read", "repositories/*/metadata/read"]
-      description = "Read only all repositories"
+      description = "Read-only all repositories"
       registry_tokens = {
         akstoken = {
-          name = "aks-token"
+          name = local.aks_acr_token
           passwords = {
             password1 = { # Expiration date for token password
               expiry = "2026-12-31T00:00:00Z"
@@ -520,28 +517,10 @@ data "azurerm_container_registry" "azure_container_registry" {
 }
 
 locals {
-  keyvault_private_endpoint_ip          = data.azurerm_private_endpoint_connection.key_vault_private_endpoint.private_service_connection[0].private_ip_address
-  containerregistry_private_endpoint_ip = data.azurerm_private_endpoint_connection.container_registry_private_endpoint.private_service_connection[0].private_ip_address
-  postgresql_private_endpoint_ip        = data.azurerm_private_endpoint_connection.postgresql_private_endpoint.private_service_connection[0].private_ip_address
-  container_registry_aks_password       = module.azure_container_registry.scope_maps["aksscope"].registry_token_passwords["akstoken"].password1[0].value
-}
-
-data "azurerm_private_endpoint_connection" "key_vault_private_endpoint" {
-  name                = "KeyVaultPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.devops_key_vault]
-}
-
-data "azurerm_private_endpoint_connection" "container_registry_private_endpoint" {
-  name                = "ContainerRegistryPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.azure_container_registry]
-}
-
-data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
-  name                = "PostgresqlPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.devops_postgresql]
+  keyvault_private_endpoint_ip        = data.azurerm_private_endpoint_connection.key_vault_private_endpoint.private_service_connection[0].private_ip_address
+  postgresql_private_endpoint_ip      = data.azurerm_private_endpoint_connection.postgresql_private_endpoint.private_service_connection[0].private_ip_address
+  container_registry_main_endpoint_ip = data.azurerm_network_interface.container_registry_main_private_endpoint.private_ip_addresses[1] # This is a list, fist address is matching .data subdomain so if we need to retrieve address for main subdomain it must select second address in a list
+  container_registry_aks_password     = module.azure_container_registry.scope_maps["aksscope"].registry_token_passwords["akstoken"].password1[0].value
 }
 
 # Azure Key Vault
@@ -584,12 +563,24 @@ module "devops_key_vault" {
       description                = "KeyVaultDefaultClient"
     }
   }
-  secrets = { # Create secret for Kubernetes external dns and cert manager
+  secrets = { # Create secret for Kubernetes external dns and cert manager whole workload
+    cloudflare_r2_api_uri = {
+      name = "cloudflare-r2-api-uri"
+      tags = var.azure_application_tags
+    }
+    cloudflare_r2_account_id = {
+      name = "cloudflare-r2-account-id"
+      tags = var.azure_application_tags
+    }
     cloudflare_api_token = {
       name = "cloudflare-api-token"
       tags = var.azure_application_tags
     }
-    aks_registry_login = {
+    acr_name = {
+      name = "acr-name"
+      tags = var.azure_application_tags
+    }
+    aks_registry_token = {
       name = "aks-acr-token"
       tags = var.azure_application_tags
     }
@@ -601,8 +592,8 @@ module "devops_key_vault" {
       name = "postgresql-uri"
       tags = var.azure_application_tags
     }
-    postgresql_user = {
-      name = "postgresql-user"
+    postgresql_username = {
+      name = "postgresql-username"
       tags = var.azure_application_tags
     }
     postgresql_password = {
@@ -611,12 +602,15 @@ module "devops_key_vault" {
     }
   }
   secrets_value = {
-    cloudflare_api_token  = var.cloudflare_api_token
-    aks_registry_login    = module.azure_container_registry.name
-    aks_registry_password = local.container_registry_aks_password
-    postgresql_uri        = data.azurerm_postgresql_flexible_server.devops_postgresql.fqdn
-    postgresql_user       = data.azurerm_postgresql_flexible_server.devops_postgresql.administrator_login
-    postgresql_password   = random_password.postgresql_admin_password.result
+    cloudflare_r2_api_uri    = "https://${cloudflare_r2_custom_domain.devops_r2_custom_domain.domain}/${cloudflare_r2_bucket.devops_r2_bucket.name}"
+    cloudflare_r2_account_id = var.cloudflare_account_id
+    cloudflare_api_token     = var.cloudflare_api_token
+    acr_name                 = module.azure_container_registry.name
+    aks_registry_token       = local.aks_acr_token # Here we need to pass ACR token name
+    aks_registry_password    = local.container_registry_aks_password
+    postgresql_uri           = data.azurerm_postgresql_flexible_server.devops_postgresql.fqdn
+    postgresql_username      = data.azurerm_postgresql_flexible_server.devops_postgresql.administrator_login
+    postgresql_password      = random_password.postgresql_admin_password.result
   }
   tags = var.azure_application_tags
 }
@@ -628,7 +622,7 @@ module "devops_postgresql" {
   name                = "${module.azure_naming.postgresql_server.name}-${local.env}"
   resource_group_name = module.azure_resource_group.name
   location            = var.azure_region
-  server_version      = "16"                  # Postgresql 18
+  server_version      = "16"                  # Postgresql 16
   sku_name            = "GP_Standard_D2ds_v4" # 2 vCores, 8 GiB memory, 3750 max iops for Server VM. Depends on Region and current availability
   storage_mb          = "32768"               # 32 GB on SSD Disk
   authentication = {
@@ -641,7 +635,7 @@ module "devops_postgresql" {
   high_availability = {
     mode = "SameZone"
   }
-  zone = "1"  # Need to choose AZ for correct provisioning
+  zone = "1" # Need to choose AZ for correct provisioning
   databases = {
     devops = {
       name = "devops"
@@ -663,10 +657,29 @@ module "devops_postgresql" {
   tags = var.azure_application_tags
 }
 
+# In  this section we need to retrieve IPv4 addresses from Private Endpoint configurations
 data "azurerm_postgresql_flexible_server" "devops_postgresql" {
   name                = module.devops_postgresql.name
   resource_group_name = module.azure_resource_group.name
   depends_on          = [module.devops_postgresql]
+}
+
+data "azurerm_private_endpoint_connection" "key_vault_private_endpoint" {
+  name                = "KeyVaultPrivateEndpoint"
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.devops_key_vault]
+}
+
+data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
+  name                = "PostgresqlPrivateEndpoint"
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.devops_postgresql]
+}
+
+data "azurerm_network_interface" "container_registry_main_private_endpoint" {
+  name                = "containerregistry-${module.azure_naming.network_interface.name}${local.env}"
+  resource_group_name = module.azure_resource_group.name
+  depends_on          = [module.azure_container_registry]
 }
 
 # Private DNS Zones (These are very important because we can use TLS protocol in isolated private Azure network without exposing endpoints outside. Azure usually provides TLS wildcard certs that we can use with resource name as subdomain)
@@ -700,13 +713,13 @@ module "devops_container_registry_private_dns_zone" {
   version     = "0.4.3"
   domain_name = "azurecr.io"
   parent_id   = module.azure_resource_group.resource_id
-  a_records = {
-    acr = {
-      name         = module.azure_container_registry.name
-      ttl          = 5
-      ip_addresses = [local.containerregistry_private_endpoint_ip]
-    }
-  }
+  # a_records = { # I don't know why ACR module enter primary (data) Private DNS record automatically, I had some bugs with that because methods used in other resources (DB, Key Vault) are using one IPv4 address and one domain per resource. I couldn't pull images from registry because DNS records weren't configured correctly
+  #   acr_io = {
+  #     name         = module.azure_container_registry.name
+  #     ttl          = 5
+  #     ip_addresses = [local.container_registry_main_endpoint_ip]
+  #   }
+  # }
   virtual_network_links = {
     aks = {
       vnetlinkname       = "aksvnetlink"
@@ -725,13 +738,13 @@ module "devops_postgresql_private_dns_zone" {
   version     = "0.4.3"
   domain_name = "postgres.database.azure.com"
   parent_id   = module.azure_resource_group.resource_id
-  a_records = {
-    db = {
-      name         = module.devops_postgresql.name
-      ttl          = 5
-      ip_addresses = [local.postgresql_private_endpoint_ip]
-    }
-  }
+  # a_records = { # Same problem as with ACR
+  #   db = {
+  #     name         = module.devops_postgresql.name
+  #     ttl          = 5
+  #     ip_addresses = [local.postgresql_private_endpoint_ip]
+  #   }
+  # }
   virtual_network_links = {
     aks = {
       vnetlinkname       = "aksvnetlink"

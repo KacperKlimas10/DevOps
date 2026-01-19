@@ -18,12 +18,30 @@ spec:
         app: storage-service
         version: v1.0
     spec:
-      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
-        - name: azurecr-credentials
       containers:
         - name: storage-service
-          image: storage-service:dev
+          image: acrdevopsprojectprod.azurecr.io/storage-service:v1.0
           imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: RABBITMQ_HOST
+              value: rabbitmq.rabbitmq-system.svc.cluster.local
+            - name: BUCKET_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-r2-credentials
+                  key: apiUri
+            - name: BUCKET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-r2-credentials
+                  key:  accessKeyId
+            - name: BUCKET_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: cloudflare-r2-credentials
+                  key: secretAccessKey
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -45,5 +63,7 @@ spec:
               port: 8080
             initialDelaySeconds: 15
             periodSeconds: 10
-      serviceAccountName: storage-service
+      imagePullSecrets: # Setting credentials to Azure Container Registry, synchronized with Key Vault
+        - name: azurecr-credentials
       restartPolicy: Always
+      serviceAccountName: storage-service

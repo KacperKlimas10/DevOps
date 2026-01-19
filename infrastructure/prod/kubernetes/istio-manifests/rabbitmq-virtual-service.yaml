@@ -28,9 +28,16 @@ spec:
     - devops-project-cluster.rabbitmq-system.svc.cluster.local
   tcp:
     - match:
-        - port: 5672
+        - port: 5672  # TCP AMQP
       route:
         - destination:
             host: devops-project-cluster.rabbitmq-system.svc.cluster.local
             port:
               number: 5672
+    - match:
+        - port: 15692  # TCP Prometheus port
+      route:
+        - destination:
+            host: devops-project-cluster.rabbitmq-system.svc.cluster.local
+            port:
+              number: 15692

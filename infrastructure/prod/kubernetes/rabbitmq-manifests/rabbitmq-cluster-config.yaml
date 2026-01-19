@@ -3,14 +3,15 @@ kind: RabbitmqCluster
 metadata:
   name: devops-project-cluster
   namespace: rabbitmq-system
-  labels:
-    istio-injection: enabled  # To inject sidecar proxy automatically we need to set this label
 spec:
   replicas: 1
   override:
     statefulSet:
       spec:
         template:
+          metadata:
+            labels: # To inject sidecar proxy automatically we need to set this label (Pod level) That way we prevent injecting to deployments where there is no need
+              sidecar.istio.io/inject: "true" # Same problem as with ArgoCD but I found solution :)
           spec:
             containers:
               - name: rabbitmq
