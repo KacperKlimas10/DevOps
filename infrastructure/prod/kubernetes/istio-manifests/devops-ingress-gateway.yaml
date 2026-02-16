@@ -14,7 +14,7 @@ spec:
       hosts:
         - devops.kacperklimas.com
       tls:
-        httpsRedirect: true # Redirect from http to https
+        httpsRedirect: true # Redirect from HTTP to HTTPS
     - port:
         number: 443
         name: https
@@ -24,7 +24,7 @@ spec:
       tls:
         mode: SIMPLE
         credentialName: app-ingress-gateway-cert  # This should match the Certificate secretName
-        minProtocolVersion: TLSV1_2
+        minProtocolVersion: TLSV1_2 # The best option is to use TLSv1.2 as the minimum protocol version, but the proxy should preferably use TLSv1.3
         maxProtocolVersion: TLSV1_3
         cipherSuites:
           - ECDHE-ECDSA-AES128-GCM-SHA256
