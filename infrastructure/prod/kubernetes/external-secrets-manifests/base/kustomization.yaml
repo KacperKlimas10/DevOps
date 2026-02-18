@@ -1,0 +1,5 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - key-vault-cluster-secret-store.yaml
+  - key-vault-external-secrets.yaml

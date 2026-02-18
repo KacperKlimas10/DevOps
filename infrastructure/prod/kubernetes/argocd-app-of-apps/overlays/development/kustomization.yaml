@@ -9,14 +9,13 @@ patches:
       kind: Application
       name: storage-service
       namespace: argocd
-    patch: |-
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: storage-service
-      spec:
-        targetRevision: feature/argocd-testing
-        path: infrastructure/prod/kubernetes/storage-service-manifests/overlays/development
+    patch: |- # JSON6902 Patches
+      - op: replace
+        path: /spec/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/path
+        value: infrastructure/prod/kubernetes/storage-service-manifests/overlays/development
   - target:
       group: argoproj.io
       version: v1alpha1
@@ -24,13 +23,12 @@ patches:
       name: user-service
       namespace: argocd
     patch: |-
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: user-service      
-      spec:
-        targetRevision: feature/argocd-testing
-        path: infrastructure/prod/kubernetes/user-service-manifests/overlays/development
+      - op: replace
+        path: /spec/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/path
+        value: infrastructure/prod/kubernetes/user-service-manifests/overlays/development
   - target:
       group: argoproj.io
       version: v1alpha1
@@ -38,13 +36,12 @@ patches:
       name: config-external-secrets
       namespace: argocd
     patch: |-
-      apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      metadata:
-        name: config-external-secrets     
-      spec:
-        targetRevision: feature/argocd-testing
-        path: infrastructure/prod/kubernetes/external-secrets-manifests/overlays/development
+      - op: replace
+        path: /spec/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/path
+        value: infrastructure/prod/kubernetes/external-secrets-manifests/overlays/development
   - target:
       group: argoproj.io
       version: v1alpha1
@@ -52,10 +49,9 @@ patches:
       name: config-config-istio
       namespace: argocd
     patch: |-
-      apiVersion: argoproj.io/v1alpha1
-      metadata:
-        name: config-config-istio
-      kind: Application
-      spec:
-        targetRevision: feature/argocd-testing
-        path: infrastructure/prod/kubernetes/istio-manifests/overlays/development
+      - op: replace
+        path: /spec/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/path
+        value: infrastructure/prod/kubernetes/istio-manifests/overlays/development
