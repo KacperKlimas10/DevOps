@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - app-storage-service.yaml
+  - app-user-service.yaml
+  - config-external-secrets.yaml
+  - config-istio.yaml
+  - config-cert-manager.yaml
+  - config-prometheus-stack.yaml
+  - config-rabbitmq.yaml
+  - helm-cert-manager.yaml
+  - helm-external-dns.yaml
+  - helm-external-secrets.yaml
+  - helm-istio-base.yaml
+  - helm-istio-d.yaml
+  - helm-istio-egress-controller.yaml
+  - helm-istio-ingress-controller.yaml
+  - helm-prometheus-stack.yaml
