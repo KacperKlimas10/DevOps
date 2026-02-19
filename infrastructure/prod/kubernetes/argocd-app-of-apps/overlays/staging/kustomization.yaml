@@ -11,10 +11,10 @@ patches:
       namespace: argocd
     patch: |- # JSON6902 Patches
       - op: replace
-        path: /spec/targetRevision
+        path: /spec/source/targetRevision
         value: feature/argocd-testing  
       - op: replace
-        path: /spec/path
+        path: /spec/source/path
         value: infrastructure/prod/kubernetes/storage-service-manifests/overlays/staging
   - target:
       group: argoproj.io
@@ -24,10 +24,10 @@ patches:
       namespace: argocd
     patch: |-
       - op: replace
-        path: /spec/targetRevision
+        path: /spec/source/targetRevision
         value: feature/argocd-testing  
       - op: replace
-        path: /spec/path
+        path: /spec/source/path
         value: infrastructure/prod/kubernetes/user-service-manifests/overlays/staging
   - target:
       group: argoproj.io
@@ -37,10 +37,10 @@ patches:
       namespace: argocd
     patch: |-
       - op: replace
-        path: /spec/targetRevision
+        path: /spec/source/targetRevision
         value: feature/argocd-testing  
       - op: replace
-        path: /spec/path
+        path: /spec/source/path
         value: infrastructure/prod/kubernetes/external-secrets-manifests/overlays/staging
   - target:
       group: argoproj.io
@@ -50,8 +50,8 @@ patches:
       namespace: argocd
     patch: |-
       - op: replace
-        path: /spec/targetRevision
+        path: /spec/source/targetRevision
         value: feature/argocd-testing  
       - op: replace
-        path: /spec/path
+        path: /spec/source/path
         value: infrastructure/prod/kubernetes/istio-manifests/overlays/staging
