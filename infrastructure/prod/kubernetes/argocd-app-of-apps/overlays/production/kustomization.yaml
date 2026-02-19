@@ -46,7 +46,7 @@ patches:
       group: argoproj.io
       version: v1alpha1
       kind: Application
-      name: config-config-istio
+      name: config-istio
       namespace: argocd
     patch: |-
       - op: replace

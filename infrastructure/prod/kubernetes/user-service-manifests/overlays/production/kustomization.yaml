@@ -2,14 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
-patches:
-  - target:
-      group: apps
-      version: v1
-      kind: Deployment
-      name: storage-service-v1.0
-      namespace: prod
-    patch: |- # JSON6902 Patches
-      - op: replace
-        path: /spec/template/spec/containers/0/image
-        value: acrdevopsprojectprodu.azurecr.io/user-service:v1.0
+images:
+  - name: acrdevopsprojectprodu.azurecr.io
+    newName: user-service
+    newTag: v1.0
