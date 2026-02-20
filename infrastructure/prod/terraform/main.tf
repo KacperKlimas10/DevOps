@@ -518,8 +518,6 @@ data "azurerm_container_registry" "azure_container_registry" {
 
 locals {
   keyvault_private_endpoint_ip        = data.azurerm_private_endpoint_connection.key_vault_private_endpoint.private_service_connection[0].private_ip_address
-  postgresql_private_endpoint_ip      = data.azurerm_private_endpoint_connection.postgresql_private_endpoint.private_service_connection[0].private_ip_address
-  container_registry_main_endpoint_ip = data.azurerm_network_interface.container_registry_main_private_endpoint.private_ip_addresses[1] # This is a list, fist address is matching .data subdomain so if we need to retrieve address for main subdomain it must select second address in a list
   container_registry_aks_password     = module.azure_container_registry.scope_maps["aksscope"].registry_token_passwords["akstoken"].password1[0].value
 }
 
@@ -668,18 +666,6 @@ data "azurerm_private_endpoint_connection" "key_vault_private_endpoint" {
   name                = "KeyVaultPrivateEndpoint"
   resource_group_name = module.azure_resource_group.name
   depends_on          = [module.devops_key_vault]
-}
-
-data "azurerm_private_endpoint_connection" "postgresql_private_endpoint" {
-  name                = "PostgresqlPrivateEndpoint"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.devops_postgresql]
-}
-
-data "azurerm_network_interface" "container_registry_main_private_endpoint" {
-  name                = "containerregistry-${module.azure_naming.network_interface.name}${local.env}"
-  resource_group_name = module.azure_resource_group.name
-  depends_on          = [module.azure_container_registry]
 }
 
 # Private DNS Zones (These are very important because we can use TLS protocol in isolated private Azure network without exposing endpoints outside. Azure usually provides TLS wildcard certs that we can use with resource name as subdomain)

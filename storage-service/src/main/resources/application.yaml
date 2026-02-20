@@ -32,5 +32,13 @@ management:
     jmx:
       exposure:
         include: "*"
+logging:
+  level:
+    root: INFO
+    org.springframework.amqp: DEBUG
+    org.springframework.amqp.rabbit: DEBUG
+    org.springframework.amqp.rabbit.connection: DEBUG
+    org.springframework.amqp.rabbit.listener: DEBUG
+    com.rabbitmq.client: DEBUG
 server:
   port: "${SERVER_PORT:8500}"
