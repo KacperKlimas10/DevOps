@@ -6,6 +6,6 @@ replicas:
   - name: storage-service-v1.0
     count: 3
 images:
-  - name: acrdevopsprojectprodu.azurecr.io
-    newName: storage-service
+  - name: acrdevopsproject.azurecr.io/storage-service
+    newName: acrdevopsprojectprodu.azurecr.io/storage-service
     newTag: v1.0

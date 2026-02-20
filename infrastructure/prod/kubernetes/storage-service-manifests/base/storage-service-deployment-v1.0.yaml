@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: storage-service
-          image: acrdevopsprojectprod.azurecr.io/storage-service:v1.0
+          image: acrdevopsproject.azurecr.io/storage-service:v1.0
           imagePullPolicy: IfNotPresent
           env:
             - name: SERVER_PORT

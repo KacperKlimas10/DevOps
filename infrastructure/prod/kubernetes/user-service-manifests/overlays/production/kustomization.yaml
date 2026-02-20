@@ -2,7 +2,10 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - ../../base
+replicas:
+  - name: user-service-v1.0
+    count: 3
 images:
-  - name: acrdevopsprojectprodu.azurecr.io
-    newName: user-service
+  - name: acrdevopsproject.azurecr.io/user-service
+    newName: acrdevopsprojectprodu.azurecr.io/user-service
     newTag: v1.0
