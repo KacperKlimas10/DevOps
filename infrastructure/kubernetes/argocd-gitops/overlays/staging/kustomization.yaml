@@ -1,0 +1,68 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: storage-service
+      namespace: argocd
+    patch: |- # JSON6902 Patches
+      - op: replace
+        path: /spec/source/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/source/path
+        value: infrastructure/prod/kubernetes/storage-service-manifests/overlays/staging
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: user-service
+      namespace: argocd
+    patch: |-
+      - op: replace
+        path: /spec/source/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/source/path
+        value: infrastructure/prod/kubernetes/user-service-manifests/overlays/staging
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: config-external-secrets
+      namespace: argocd
+    patch: |-
+      - op: replace
+        path: /spec/source/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/source/path
+        value: infrastructure/prod/kubernetes/external-secrets-manifests/overlays/staging
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: config-istio
+      namespace: argocd
+    patch: |-
+      - op: replace
+        path: /spec/source/targetRevision
+        value: feature/argocd-testing  
+      - op: replace
+        path: /spec/source/path
+        value: infrastructure/prod/kubernetes/istio-manifests/overlays/staging
+  - target:
+      group: argoproj.io
+      version: v1alpha1
+      kind: Application
+      name: prometheus-stack
+      namespace: argocd
+    patch: |-
+      - op: add
+        path: /spec/source/helm/valueFiles
+        value: 
+          - ../../helm-values/prometheus-stack/values-staging.yaml

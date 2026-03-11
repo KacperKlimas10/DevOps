@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: devops-app
+  namespace: argocd
+spec:
+  project: devops-project
+  source:
+    repoURL: https://github.com/KacperKlimas10/DevOps.git
+    targetRevision: feature/argocd-testing
+    path: infrastructure/prod/kubernetes/argocd-gitops/overlays/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

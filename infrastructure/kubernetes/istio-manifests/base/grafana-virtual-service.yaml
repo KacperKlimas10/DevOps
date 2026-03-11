@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: grafana-virtualservice
+  namespace: istio-system
+spec:
+  hosts:
+    - devops.kacperklimas.com
+  gateways:
+    - istio-ingress/application-gateway # In the virtual service documentation we can find information how to reference to gateway in other ns
+  http:
+    - match:
+        - uri:
+            prefix: /grafana
+      route:
+        - destination:
+            host: prometheus-stack-grafana.istio-system.svc.cluster.local
+            port:
+              number: 80

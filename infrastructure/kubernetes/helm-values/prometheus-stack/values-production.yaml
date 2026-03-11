@@ -1,0 +1,4 @@
+grafana:
+  ingress:  # This is needed for setting correct hostname to Grafana, it creates useless Ingress resource
+    hosts: devops-production.kacperklimas.com
+    path: /grafana

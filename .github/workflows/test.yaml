@@ -1,0 +1,24 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      -
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-22.04
+    name: Build
+    permissions:
+      contents: read
+      packages: read
+      issues: write
+      pull-requests: write
+      statuses: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Super-linter
+        uses: super-linter/super-linter@72c2bd7d30dde18253acaf7eb19fbdd82d882bdd
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
