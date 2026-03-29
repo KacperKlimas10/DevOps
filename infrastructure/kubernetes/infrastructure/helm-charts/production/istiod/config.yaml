@@ -1,0 +1,13 @@
+name: istio # Istio control plane
+chart: istiod
+repoURL: https://istio-release.storage.googleapis.com/charts
+targetRevision: 1.28.2
+releaseName: istiod
+namespace: istio-system
+ignoreDifferences:
+  - group: admissionregistration.k8s.io
+    kind: ValidatingWebhookConfiguration
+    jsonPointers:
+      - /webhooks/0/failurePolicy
+syncOptions:
+  - CreateNamespace=true

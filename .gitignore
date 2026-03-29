@@ -5,6 +5,6 @@ infrastructure/terraform/terraform.tfstate
 infrastructure/terraform/terraform.tfstate.backup
 infrastructure/terraform/.terraform.lock.hcl
 infrastructure/terraform/var.auto.tfvars
-infrastructure/kubernetes/external-dns-manifests/cloudflare-external-dns-secret.yaml
-infrastructure/kubernetes/cert-manager-manifests/cloudflare-cert-manager-secret.yaml
+infrastructure/kubernetes/infrastructure/custom-resources/external-dns/cloudflare-external-dns-secret.yaml
+infrastructure/kubernetes/infrastructure/custom-resources/cert-manager/cloudflare-cert-manager-secret.yaml
 infrastructure/terraform/terraform.tfstate.d

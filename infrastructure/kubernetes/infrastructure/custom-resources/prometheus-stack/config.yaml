@@ -1,0 +1,4 @@
+name: istio # Istio config
+syncWave: "1"
+syncOptions:
+  - CreateNamespace=true

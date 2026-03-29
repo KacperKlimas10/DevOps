@@ -775,7 +775,7 @@ resource "helm_release" "argo_cd" {
   version    = "9.0.5"
   namespace  = "argocd"
   values = [
-    file(var.argocd_path_to_values) # Override default Chart values with values-production.yaml file located in prod/kubernetes directory
+    file(var.argocd_path_to_values) # Override default Chart values with values.yaml file located in prod/kubernetes directory
   ]
   create_namespace = true
   depends_on       = [module.azure_aks]
