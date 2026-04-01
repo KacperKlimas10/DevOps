@@ -1,4 +1,5 @@
-name: external-secrets # ESO config
+# ESO config
+isKustomized: true
 syncWave: "-2"
 syncOptions:
   - CreateNamespace=true

@@ -2,20 +2,20 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: microservices-application-set
+  namespace: argocd
 spec:
   goTemplate: true # We are using Go template because fasttemplate will be deprecated
-  goTemplateOptions: ["missingkey=error"]
   generators:
 
     - git:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
         revision: feature/argocd-testing
         directories:
-          - path: ../../infrastructure/applications/*/overlays/production
+          - path: infrastructure/kubernetes/applications/*/overlays/production
 
   template:
     metadata:
-      name: microservice-{{ index .path.segments 4 }}
+      name: 'microservice-{{ index .path.segments 3 }}-production'
       namespace: argocd
       finalizers:
         - resources-finalizer.argocd.argoproj.io  # Cascade delete
@@ -26,6 +26,6 @@ spec:
       source:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
         targetRevision: feature/argocd-testing
-        path: {{ .path.path }}
+        path: '{{ .path.path }}'
       destination:
         server: https://kubernetes.default.svc

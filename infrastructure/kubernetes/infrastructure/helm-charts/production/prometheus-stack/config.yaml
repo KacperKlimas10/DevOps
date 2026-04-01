@@ -1,4 +1,4 @@
-name: prometheus-stack # Prometheus, Grafana and other ecosystem tools
+# Prometheus, Grafana and other ecosystem tools
 chart: kube-prometheus-stack
 repoURL: https://prometheus-community.github.io/helm-charts
 targetRevision: 79.0.1

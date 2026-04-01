@@ -1,4 +1,4 @@
-name: external-secrets # ESO
+# ESO
 chart: external-secrets
 syncWave: "-3"
 repoURL: https://charts.external-secrets.io/

@@ -1,4 +1,4 @@
-name: istio-crds # Istio CRDs
+# Istio CRDs
 chart: base
 repoURL: https://istio-release.storage.googleapis.com/charts
 targetRevision: 1.28.2

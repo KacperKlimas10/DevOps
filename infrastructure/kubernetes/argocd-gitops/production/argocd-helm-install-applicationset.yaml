@@ -2,60 +2,57 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: helm-install-application-set
+  namespace: argocd
 spec:
-  goTemplate: true # We are using Go template engine
-  goTemplateOptions: ["missingkey=error"]
+  goTemplate: true # We are using Go template engines
   generators:
 
     - git: # Git generator automatically detects new helm chart folder and applies to cluster
         repoURL: https://github.com/KacperKlimas10/DevOps.git
         revision: feature/argocd-testing
         files:
-          - path: ../../infrastructure/helm-charts/production/*/config.yaml
+          - path: infrastructure/kubernetes/infrastructure/helm-charts/production/*/config.yaml
 
   template:
     metadata:
-      name: helm-{{ .path.basename }}-production # Template points at folder containing config file; Provided by Git generator
+      name: 'helm-{{ .path.basename }}-production' # Template points at folder containing config file; Provided by Git generator
       namespace: argocd
       finalizers:
         - resources-finalizer.argocd.argoproj.io
       annotations:
-        argocd.argoproj.io/sync-wave: {{ default "0" .syncWave }}
+        argocd.argoproj.io/sync-wave: '{{ default "0" .syncWave }}'
     spec:
       project: devops-project-production
       source:
-        chart: {{ .chart }}
-        repoURL: {{ .repoURL }}
-        targetRevision: {{ .targetRevision }}
+        chart: '{{ .chart }}'
+        repoURL: '{{ .repoURL }}'
+        targetRevision: '{{ .targetRevision }}'
         helm:
-          releaseName: {{ .releaseName }}
+          releaseName: '{{ .releaseName }}'
+          ignoreMissingValueFiles: true
       destination:
         server: https://kubernetes.default.svc
-        namespace: {{ .namespace }}
-  templatePatch: | # Advanced Go templating that makes easier managing specific settings for example ignoreDifferences or Helm value files
+        namespace: '{{ .namespace }}'
+  templatePatch: | # Advanced Go templating with Sprig that makes easier managing specific settings for example ignoreDifferences or Helm value files
     spec:
       source:
         helm:
-          {{- if not .defaultValues }}
           valueFiles: # My charts have a custom values files or default
-            - ../../infrastructure/helm-charts/production/{{ .name }}/values.yaml
-            {{- range .additionalValueFiles }} # Go Templating for each element in the list
-            - {{ . }}
-            {{- end }}
-          {{- end }} 
-      {{- if .ignoreDifferences }}
+            - values.yaml
+          {{- range .additionalValueFiles }}
+            {{ . }}
+          {{- end }}
       ignoreDifferences: # This feature allows to ignore fields which makes OutOfSync status
-        {{- range .ignoreDifferences }}
+      {{- range .ignoreDifferences }}
         - group: {{ .group }}
           kind:  {{ .kind }}
           jsonPointers:
-            {{- range .jsonPointers }}
+          {{- range .jsonPointers }}
             - {{ . }}
-            {{- end }}
-        {{- end }}
+          {{- end }}
       {{- end }}
       syncPolicy:
         syncOptions:
-          {{- range .syncOptions }}
+        {{- range .syncOptions }}
           - {{ . }}
-          {{- end }}
+        {{- end }}

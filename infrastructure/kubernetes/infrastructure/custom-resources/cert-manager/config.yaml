@@ -1,4 +1,5 @@
-name: cert-manager # Cert Manager config
+# Cert Manager config
+isKustomized: false
 syncWave: "-2"
 namespace: cert-manager
 syncOptions:

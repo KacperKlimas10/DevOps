@@ -1,4 +1,4 @@
-name: cert-manager # Cert Manager
+# Cert Manager
 chart: cert-manager
 syncWave: "-3"
 repoURL: https://charts.jetstack.io

@@ -1,4 +1,4 @@
-name: istio-gateway # Istio Ingress Gateway
+# Istio Ingress Gateway
 chart: gateway
 repoURL: https://istio-release.storage.googleapis.com/charts
 targetRevision: 1.28.2

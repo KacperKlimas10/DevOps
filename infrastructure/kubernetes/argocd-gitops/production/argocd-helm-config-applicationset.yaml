@@ -2,65 +2,51 @@ apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: helm-config-application-set
+  namespace: argocd
 spec:
   goTemplate: true # We are using Go template engine
-  goTemplateOptions: ["missingkey=error"]
   generators:
-    - merge:
-        mergeKeys:
-          - {{ .values.tool }}
-        generators:
 
-          - git:
-              repoURL: https://github.com/KacperKlimas10/DevOps.git
-              revision: feature/argocd-testing
-              files:
-                - path: ../../infrastructure/custom-resources/*/config.yaml
-              pathParamPrefix: config
-              values:
-                tool: {{ .config.path.basename }}
-
-          - git:
-              repoURL: https://github.com/KacperKlimas10/DevOps.git
-              revision: feature/argocd-testing
-              directories:
-                - path: ../../infrastructure/custom-resources/*/overlays/production
-              pathParamPrefix: kustomize
-              values:
-                tool: {{ index .kustomize.path.segments 4 }}
+    - git:
+        repoURL: https://github.com/KacperKlimas10/DevOps.git
+        revision: feature/argocd-testing
+        files:
+          - path: infrastructure/kubernetes/infrastructure/custom-resources/*/config.yaml
 
   template:
     metadata:
-      name: config-{{ .config.path.basename }}-production # Template points at folder containing config file; Provided by Git generator
+      name: 'helm-config-{{ .path.basename }}-production' # Template points at folder containing config file; Provided by Git generator
       namespace: argocd
       finalizers:
         - resources-finalizer.argocd.argoproj.io
       annotations:
-        argocd.argoproj.io/sync-wave: {{ default "0" .config.syncWave }}
+        argocd.argoproj.io/sync-wave: '{{ default "0" .syncWave }}'
     spec:
       project: devops-project-production
       source:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
         targetRevision: feature/argocd-testing
-        path: {{ .kustomize.path.path }}
       destination:
         server: https://kubernetes.default.svc
-  templatePatch: | # Advanced Go templating that makes easier managing specific settings for example ignoreDifferences or Helm value files
+  templatePatch: | # Advanced Go templating with Sprig that makes easier managing specific settings for example ignoreDifferences or Helm value files
     spec:
       source:
-      {{- if .ignoreDifferences }}
+      {{- if .isKustomized }}
+        path: {{ .path.path }}/overlays/production
+      {{- else }}
+        path: {{ .path.path }}
+      {{- end }}
       ignoreDifferences: # This feature allows to ignore fields which makes OutOfSync status
-        {{- range .ignoreDifferences }}
+      {{- range .ignoreDifferences }}
         - group: {{ .group }}
           kind:  {{ .kind }}
           jsonPointers:
-            {{- range .jsonPointers }}
+          {{- range .jsonPointers }}
             - {{ . }}
-            {{- end }}
-        {{- end }}
+          {{- end }}
       {{- end }}
       syncPolicy:
         syncOptions:
-          {{- range .syncOptions }}
+        {{- range .syncOptions }}
           - {{ . }}
-          {{- end }}
+        {{- end }}
