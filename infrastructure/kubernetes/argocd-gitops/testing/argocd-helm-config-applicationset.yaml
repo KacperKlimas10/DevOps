@@ -1,0 +1,56 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: helm-config-application-set
+  namespace: argocd
+spec:
+  goTemplate: true # We are using Go template engine
+  generators:
+
+    - git:
+        repoURL: https://github.com/KacperKlimas10/DevOps.git
+        revision: feature/argocd-testing
+        files:
+          - path: infrastructure/kubernetes/infrastructure/custom-resources/*/config.yaml
+
+  template:
+    metadata:
+      name: 'helm-config-{{ .path.basename }}-testing' # Template points at folder containing config file; Provided by Git generator
+      namespace: argocd
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{ default "0" .syncWave }}'
+    spec:
+      project: devops-project-testing
+      source:
+        repoURL: https://github.com/KacperKlimas10/DevOps.git
+        targetRevision: feature/argocd-testing
+      destination:
+        server: https://kubernetes.default.svc
+
+  templatePatch: | # Advanced Go templating with Sprig that makes easier managing specific settings for example ignoreDifferences or Helm value files
+    spec:
+      source:
+      {{- if .isKustomized }}
+        path: {{ .path.path }}/overlays/testing
+      {{- else }}
+        path: {{ .path.path }}
+      {{- end }}
+      ignoreDifferences: # This feature allows to ignore fields which makes OutOfSync status
+      {{- range .ignoreDifferences }}
+        - group: {{ .group }}
+          kind:  {{ .kind }}
+          jsonPointers:
+          {{- range .jsonPointers }}
+            - {{ . }}
+          {{- end }}
+      {{- end }}
+      syncPolicy:
+        automated: 
+          prune: true
+          selfHeal: true
+        syncOptions:
+        {{- range .syncOptions }}
+          - {{ . }}
+        {{- end -}}

@@ -11,7 +11,7 @@ spec:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
         revision: feature/argocd-testing
         directories:
-          - path: infrastructure/kubernetes/applications/*/overlays/production
+          - path: infrastructure/kubernetes/microservices/*/overlays/production
 
   template:
     metadata:
@@ -34,3 +34,6 @@ spec:
           enabled: false
           selfHeal: true
           allowEmpty: false
+        managedNamespaceMetadata:
+          labels:
+            istio-injection: enabled  # To inject sidecar proxy automatically we need set this label
