@@ -28,6 +28,7 @@ spec:
         targetRevision: feature/argocd-testing
       destination:
         server: https://kubernetes.default.svc
+
   templatePatch: | # Advanced Go templating with Sprig that makes easier managing specific settings for example ignoreDifferences or Helm value files
     spec:
       source:
@@ -46,7 +47,11 @@ spec:
           {{- end }}
       {{- end }}
       syncPolicy:
+        automated: 
+          enabled: false
+          selfHeal: true
+          allowEmpty: false
         syncOptions:
         {{- range .syncOptions }}
           - {{ . }}
-        {{- end }}
+        {{- end -}}

@@ -29,3 +29,8 @@ spec:
         path: '{{ .path.path }}'
       destination:
         server: https://kubernetes.default.svc
+      syncPolicy:
+        automated:
+          enabled: false
+          selfHeal: true
+          allowEmpty: false
