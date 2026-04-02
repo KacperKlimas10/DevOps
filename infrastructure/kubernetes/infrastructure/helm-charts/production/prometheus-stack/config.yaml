@@ -1,0 +1,9 @@
+# Prometheus, Grafana and other ecosystem tools
+chart: kube-prometheus-stack
+repoURL: https://prometheus-community.github.io/helm-charts
+targetRevision: 79.0.1
+releaseName: prometheus-stack
+namespace: istio-system
+syncOptions:
+  - CreateNamespace=true
+  - ServerSideApply=true

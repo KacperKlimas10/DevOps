@@ -1,0 +1,5 @@
+# ESO config
+isKustomized: true
+syncWave: "-2"
+syncOptions:
+  - CreateNamespace=true

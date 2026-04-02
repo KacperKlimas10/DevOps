@@ -1,0 +1,6 @@
+# Cert Manager config
+isKustomized: false
+syncWave: "-2"
+namespace: cert-manager
+syncOptions:
+  - CreateNamespace=true

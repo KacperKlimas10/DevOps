@@ -10,17 +10,12 @@
     </parent>
     <groupId>com.devops</groupId>
     <artifactId>devops-project</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>devops</version>
     <packaging>pom</packaging>
     <modules>
         <module>shared-resources</module>
         <module>user-service</module>
         <module>storage-service</module>
-        <module>notification-service</module>
-        <module>label-service</module>
-        <module>tracking-service</module>
-        <module>shipment-service</module>
-        <module>pricing-service</module>
     </modules>
     <properties>
         <java.version>17</java.version>
@@ -39,10 +34,6 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-security</artifactId>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
