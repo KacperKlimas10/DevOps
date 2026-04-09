@@ -1,4 +1,4 @@
-name: Run Linter (Validattion Stage)
+name: Run Linter (Validation Stage)
 
 on:
   push:
