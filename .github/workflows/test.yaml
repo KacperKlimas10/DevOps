@@ -1,4 +1,4 @@
-name: Run Tests (Validattion Stage)
+name: Run Tests (Validation Stage)
 
 on:
   push:
