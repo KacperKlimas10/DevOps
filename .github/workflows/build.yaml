@@ -1,6 +1,0 @@
-name: build.yaml
-on:
-  push:
-    branches:
-      - master
-jobs:

@@ -1,24 +1,51 @@
-name: Run Tests
+name: Run Tests (Validattion Stage)
 
 on:
-  pull_request:
+  push:
     branches:
-      -
+      - master
+    paths:
+      - microservices/**
+      - .github/workflows/test.yaml
+  pull_request:
+  workflow_dispatch:
 
 jobs:
+  filter:
+    runs-on: ubuntu-22.04
+    outputs: 
+      microservies: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Changed paths filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # It's only used if action is triggered by a pull request event.
+          filters: '.github/utils/path-filters.yaml'
+
   run-tests:
     runs-on: ubuntu-22.04
-    name: Build
-    permissions:
-      contents: read
-      packages: read
-      issues: write
-      pull-requests: write
-      statuses: write
+    needs: filter
+    if: ${{ needs.filter.outputs.microservies != '[]' && needs.filter.outputs.microservies != '' }}
+    strategy:
+      matrix:
+        microservice: ${{ fromJson(needs.filter.outputs.microservies) }}
+      fail-fast: false 
     steps:
-      - name: Checkout
-        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
-      - name: Super-linter
-        uses: super-linter/super-linter@72c2bd7d30dde18253acaf7eb19fbdd82d882bdd
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup JDK
+        if: ${{ startsWith(matrix.microservice, 'microservices/java') }}
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Test with Maven
+        if: ${{ startsWith(matrix.microservice, 'microservices/java') }}
+        run: mvn test

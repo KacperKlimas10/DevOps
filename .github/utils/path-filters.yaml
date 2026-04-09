@@ -1,0 +1,8 @@
+microservices/java/user-service:
+  - microservices/java/user-service/**
+microservices/java/storage-service:
+  - microservices/java/storage-service/**
+microservices/go/demo-go:
+  - microservices/go/demo-go/**
+microservices/python/demo-python: 
+  - microservices/python/demo-python/**

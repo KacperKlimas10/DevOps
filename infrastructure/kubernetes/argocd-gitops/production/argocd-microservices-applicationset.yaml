@@ -33,7 +33,6 @@ spec:
         automated:
           enabled: false
           selfHeal: true
-          allowEmpty: false
         managedNamespaceMetadata:
           labels:
             istio-injection: enabled  # To inject sidecar proxy automatically we need set this label

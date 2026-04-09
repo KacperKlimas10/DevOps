@@ -50,7 +50,6 @@ spec:
         automated: 
           enabled: false
           selfHeal: true
-          allowEmpty: false
         syncOptions:
         {{- range .syncOptions }}
           - {{ . }}

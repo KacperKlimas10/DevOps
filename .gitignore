@@ -1,4 +1,5 @@
 .idea
+.github/utils/event.json
 infrastructure/terraform/certskeys
 infrastructure/terraform/.terraform
 infrastructure/terraform/terraform.tfstate
