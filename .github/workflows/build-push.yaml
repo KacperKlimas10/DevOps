@@ -47,7 +47,7 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Azure ACR Login
-        run: az acr --login ${{ vars.AZURE_CONTAINER_REGISTRY }}
+        run: az acr login -n ${{ vars.AZURE_CONTAINER_REGISTRY }}
       
       - name: Set up QEMU # Setting up Qemu and buildix for multiarch image bulding like AMD64 and ARM64
         uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
