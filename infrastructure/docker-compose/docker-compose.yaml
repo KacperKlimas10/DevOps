@@ -52,7 +52,20 @@ services:
       retries: 3
       start_period: 0s
       start_interval: 5s
-
+  
+  go-demo-service:
+    image: acrdevopsprojectprod.azurecr.io/user-service:v1.0
+    build:
+      context: ../../microservices/java/user-service
+      dockerfile: Dockerfile
+      target: development
+    restart: on-failure
+    ports:
+      - "8082:8080"
+    networks:
+      - backend-network
+      - db-network
+      
   # BROKERS
 
   rabbitmq:
