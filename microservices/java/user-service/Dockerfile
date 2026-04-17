@@ -32,7 +32,7 @@ RUN groupadd -g 1001 webservice && \
     useradd --no-create-home -u 1001 -g 1001 webservice && \
     chown -R webservice:webservice /app
 
-COPY target/*.jar webservice.jar
+COPY --from=builder build/target/*.jar webservice.jar
 
 EXPOSE 8080
 

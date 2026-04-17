@@ -1,0 +1,70 @@
+name: Build and Push (Building Stage)
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - microservices/**
+  workflow_dispatch:
+
+jobs:
+  filter:
+    runs-on: ubuntu-24.04
+    outputs: 
+      microservices: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Changed paths filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+        id: filter
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # It's only used if action is triggered by a pull request event.
+          filters: '.github/utils/path-filters.yaml'
+  
+  build-push:
+    runs-on: ubuntu-24.04      
+    needs: filter
+    if: ${{ needs.filter.outputs.microservices != '[]' && needs.filter.outputs.microservices != '' }}
+    strategy:
+      matrix:
+        microservice: ${{ fromJson(needs.filter.outputs.microservices) }}
+      fail-fast: false 
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Azure Login (OIDC) # We are using OIDC Federated Workload Identity to authenticate in Azure and get permissions to push container images
+        uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      
+      - name: Azure ACR Login
+        run: az acr --login ${{ vars.AZURE_CONTAINER_REGISTRY }}
+      
+      - name: Set up QEMU # Setting up Qemu and buildix for multiarch image bulding like AMD64 and ARM64
+        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+                                            
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+
+      - name: Extract microservice name from path
+        id: extract
+        run: |  # Bash script
+          service_path=${{ matrix.microservice }}
+          service_name=$(basename $service_path)
+          echo "service_name=$service_name" >> $GITHUB_OUTPUT
+
+      - name: Build and Push Container Images
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        with:
+          tags: ${{ vars.AZURE_CONTAINER_REGISTRY }}/${{ steps.extract.outputs.service_name }}:${{ github.sha }}
+          platforms: linux/amd64,linux/arm64  # Multiarch build
+          push: true # Push after building stage 
+          context: ${{ matrix.microservice }} # Path to Dockerfile
+          cache-from: type=gha  # To optimize building results we are using Docker Cache
+          cache-to: type=gha,mode=max
