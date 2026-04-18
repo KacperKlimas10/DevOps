@@ -50,5 +50,5 @@ variable "argocd_path_to_values" {
 variable "github_actions_oidc_subject" {
   type        = string
   description = "GitHub Actions subject pointing at your organization's repository"
-  default     = "repo:KacperKlimas10/DevOps"
+  default     = "repo:KacperKlimas10/DevOps:ref:refs/heads/master"
 }

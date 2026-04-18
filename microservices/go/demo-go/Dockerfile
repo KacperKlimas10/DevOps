@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 ARG TARGETOS
 
@@ -14,7 +14,7 @@ COPY *.go ./
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags="-s -w" -o webservice .
 
-FROM alpine:3.19 AS development
+FROM alpine:3.23.4 AS development
 
 WORKDIR /app
 
@@ -32,7 +32,7 @@ USER webservice
 ENTRYPOINT ["./webservice"]
 CMD []
 
-FROM alpine:3.19 AS release
+FROM alpine:3.23.4 AS release
 
 WORKDIR /app
 
