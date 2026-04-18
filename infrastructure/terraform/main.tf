@@ -88,20 +88,38 @@ resource "azurerm_federated_identity_credential" "devops_key_vault" {
 
 # Azure Identity for Azure Container Registry (GitHub Actions CI pipeline)
 
-resource "azurerm_user_assigned_identity" "devops_container_registry" {
-  name                = "containerregistry_uai"
+resource "azurerm_user_assigned_identity" "devops_gha_container_registry" {
+  name                = "gha_containerregistry_uai"
   resource_group_name = module.azure_resource_group.name
   location            = var.azure_region
   tags                = var.azure_application_tags
 }
 
-resource "azurerm_federated_identity_credential" "devops_container_registry" {
+resource "azurerm_federated_identity_credential" "devops_gha_container_registry" {
   name                = "github-actions-federated-credential"
-  parent_id           = azurerm_user_assigned_identity.devops_container_registry.id
+  parent_id           = azurerm_user_assigned_identity.devops_gha_container_registry.id
   resource_group_name = module.azure_resource_group.name
   audience            = ["api://AzureADTokenExchange"]
   issuer              = "https://token.actions.githubusercontent.com" # OIDC Issuer from GitHub Actions
-  subject             = var.github_actions_oidc_subject               # Default: repo:KacperKlimas10/DevOps
+  subject             = var.github_actions_oidc_subject               # Default: repo:KacperKlimas10/DevOps:ref:refs/heads/master
+}
+
+# Azure Identity for Azure Container Registry (Kubernetes)
+
+resource "azurerm_user_assigned_identity" "devops_kubernetes_container_registry" {
+  name                = "k8s_containerregistry_uai"
+  resource_group_name = module.azure_resource_group.name
+  location            = var.azure_region
+  tags                = var.azure_application_tags
+}
+
+resource "azurerm_federated_identity_credential" "devops_kubernetes_container_registry" {
+  name                = "kubernetes-federated-credential"
+  parent_id           = azurerm_user_assigned_identity.devops_kubernetes_container_registry.id
+  resource_group_name = module.azure_resource_group.name
+  audience            = ["api://AzureADTokenExchange"]
+  issuer              = module.azure_aks.oidc_issuer_url # OIDC Issuer from Kubernetes Cluster
+  subject             = "system:serviceaccount:external-secrets:acr-integration"
 }
 
 # Azure Resources
@@ -458,7 +476,7 @@ module "azure_aks" {
 }
 
 locals { # Local variable to pass in ACR config and Secret config
-    aks_acr_token = "aks-token"
+  aks_acr_token = "aks-token"
 }
 
 # Azure Container Registry
@@ -472,10 +490,15 @@ module "azure_container_registry" {
   zone_redundancy_enabled       = true
   public_network_access_enabled = true
   role_assignments = {
-    githubidentity = {                       # Assign auth method to Container Registry
+    github_identity = {                      # Assign auth method to Container Registry
       role_definition_id_or_name = "AcrPush" # Using built in role on Azure for pushing images
-      principal_id               = azurerm_user_assigned_identity.devops_container_registry.principal_id
+      principal_id               = azurerm_user_assigned_identity.devops_gha_container_registry.principal_id
       description                = "ACRUserManagedIdentity - GitHub Actions CI pipeline"
+    }
+    kubernetes_identity = {
+      role_definition_id_or_name = "AcrPull" # Using built in role on Azure for pulling images
+      principal_id               = azurerm_user_assigned_identity.devops_kubernetes_container_registry.principal_id
+      description                = "ACRUserManagedIdentity - Kubernetes"
     }
   }
   scope_maps = { # Here we are setting access authentication to ACR
@@ -550,7 +573,7 @@ module "devops_key_vault" {
   }
   tenant_id = data.azuread_client_config.devops.tenant_id
   role_assignments = {
-    kubernetesidentity = {                                   # Assign auth method to Key Vault
+    kubernetesidentity = {                                  # Assign auth method to Key Vault
       role_definition_id_or_name = "Key Vault Secrets User" # Using built in role on Azure - Key Vault User (Read only) The Principle of Least Privilege
       principal_id               = azurerm_user_assigned_identity.devops_key_vault.principal_id
       description                = "KeyVaultUserManagedIdentity"
@@ -760,6 +783,18 @@ resource "kubernetes_service_account_v1" "key_vault" { # ServiceAccount for inte
     annotations = {
       "azure.workload.identity/client-id" = azurerm_user_assigned_identity.devops_key_vault.client_id
       "azure.workload.identity/tenant-id" = azurerm_user_assigned_identity.devops_key_vault.tenant_id
+    }
+  }
+  depends_on = [kubernetes_namespace_v1.external-secrets]
+}
+
+resource "kubernetes_service_account_v1" "container_registry" { # ServiceAccount for integration with User Managed Identity which has Container Registry permissions
+  metadata {
+    name      = "acr-integration"
+    namespace = "external-secrets"
+    annotations = {
+      "azure.workload.identity/client-id" = azurerm_user_assigned_identity.devops_kubernetes_container_registry.client_id
+      "azure.workload.identity/tenant-id" = azurerm_user_assigned_identity.devops_kubernetes_container_registry.tenant_id
     }
   }
   depends_on = [kubernetes_namespace_v1.external-secrets]
