@@ -58,7 +58,8 @@ jobs:
           set -euo pipefail
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo 'microservices=["${{ inputs.microservice }}"]' >> "$GITHUB_OUTPUT"
+            msvc=$(find microservices -type d -name "${{ inputs.microservice }}" | sed 's/^\.\///') 
+            echo "microservices=[\"$msvc\"]" >> "$GITHUB_OUTPUT"
             echo 'environment=${{ inputs.environment }}' >> "$GITHUB_OUTPUT"
             echo 'version=${{ inputs.version }}' >> "$GITHUB_OUTPUT"
           
