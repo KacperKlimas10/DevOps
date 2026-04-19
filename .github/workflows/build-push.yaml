@@ -6,23 +6,72 @@ on:
       - master
     paths:
       - microservices/**
+    tags:
+      - '*@v*.*.*' 
   workflow_dispatch:
+    inputs:
+      microservice:
+        description: 'Microservice to build'
+        required: true
+        type: choice
+        options: 
+          - user-service
+          - storage-service
+          - demo-go
+          - demo-python
+      version:
+        description: 'Image tag for choosen microservice'
+        required: false
+        type: string
+      environment:
+        description: 'Environment'
+        required: true
+        type: choice
+        options: 
+          - testing 
+          - staging
+          - production
+        default: testing
 
 jobs:
   filter:
     runs-on: ubuntu-24.04
     outputs: 
-      microservices: ${{ steps.filter.outputs.changes }}
+      microservices: ${{ steps.filter-output.outputs.microservices }}
+      environment: ${{ steps.filter-output.outputs.environment }}
+      version: ${{ steps.filter-output.outputs.version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Changed paths filter
+        if: ${{ github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name == 'master' }}
         uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
         id: filter
         with:
           token: ${{ secrets.GITHUB_TOKEN }} # It's only used if action is triggered by a pull request event.
           filters: '.github/utils/path-filters.yaml'
+      
+      - name: Filter output # We need to differ how to proceed output for standard push with path filtering and pushing git tag
+        id: filter-output
+        run: | # Bash script
+          set -euo pipefail
+
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo 'microservices=["${{ inputs.microservice }}"]' >> "$GITHUB_OUTPUT"
+            echo 'environment=${{ inputs.environment }}' >> "$GITHUB_OUTPUT"
+            echo 'version=${{ inputs.version }}' >> "$GITHUB_OUTPUT"
+          
+          elif [[ "${{ github.ref_type }}" == "tag" ]]; then
+            git_tag="${{ github.ref_name }}"      
+            msvc=$(find microservices -type d -name ${git_tag%%@*} | sed 's/^\.\///') 
+            echo "microservices=[\"$msvc\"]" >> "$GITHUB_OUTPUT"
+            echo 'environment=staging' >> "$GITHUB_OUTPUT"
+
+          else
+            echo 'microservices=${{ steps.filter.outputs.changes }}' >> "$GITHUB_OUTPUT"
+            echo 'environment=testing' >> "$GITHUB_OUTPUT"
+          fi
   
   build-push:
     runs-on: ubuntu-24.04      
@@ -55,19 +104,35 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
-      - name: Extract microservice name from path
-        id: extract
-        run: |  # Bash script
-          service_path=${{ matrix.microservice }}
-          service_name=$(basename $service_path)
-          echo "service_name=$service_name" >> $GITHUB_OUTPUT
+      - name: Generate Image Tag
+        id: image-tag
+        env:
+          MICROSERVICE_PATH: ${{ matrix.microservice }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          INPUT_VERSION: ${{ inputs.version }}
+          REF_NAME: ${{ github.ref_name }}
+        run: | # Bash script
+          set -euo pipefail
+          microservice_name=$(basename "${MICROSERVICE_PATH}")
+
+          if [[ -n "${INPUT_VERSION}" && "${INPUT_VERSION}" != "null" ]]; then
+            tag="${INPUT_VERSION}"
+          
+          elif [[ "${ENVIRONMENT}" == "staging" || "${ENVIRONMENT}" == "production" ]]; then
+            tag="${REF_NAME##*@}"
+
+          else
+            tag=$(git describe --tags --always --first-parent --match "${microservice_name}@*.*.*")
+          fi
+          
+          echo "generated_tag=${AZURE_CONTAINER_REGISTRY}/${microservice_name}:${tag}" >> "$GITHUB_OUTPUT"
 
       - name: Build and Push Container Images
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
-          tags: ${{ vars.AZURE_CONTAINER_REGISTRY }}/${{ steps.extract.outputs.service_name }}:${{ github.sha }}
-          platforms: linux/amd64,linux/arm64  # Multiarch build
+          tags: ${{ steps.image-tag.outputs.generated_tag }}
+          platforms: linux/amd64,linux/arm64 # Multiarch build
           push: true # Push after building stage 
           context: ${{ matrix.microservice }} # Path to Dockerfile
-          cache-from: type=gha  # To optimize building results we are using Docker Cache
+          cache-from: type=gha # To optimize building results we are using Docker Cache
           cache-to: type=gha,mode=max

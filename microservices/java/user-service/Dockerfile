@@ -1,10 +1,14 @@
 FROM maven AS builder
 
 WORKDIR /build
+# Cache this layer to speed up workflow
+COPY pom.xml .  
 
-COPY . .
+RUN --mount=type=cache,target=/root/.m2 mvn verify --fail-never -B
 
-RUN mvn clean package -DskipTests
+COPY src ./src
+
+RUN mvn clean package -DskipTests -B -o
 
 FROM eclipse-temurin:25-jre-ubi10-minimal AS development
 

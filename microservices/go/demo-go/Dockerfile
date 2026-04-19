@@ -7,8 +7,10 @@ ARG TARGETARCH
 WORKDIR /build
 
 COPY go.mod go.sum ./
-
-RUN go mod download
+# Cache this layer to speed up workflow
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go mod download
 
 COPY *.go ./
 
