@@ -111,6 +111,7 @@ jobs:
           ENVIRONMENT: ${{ inputs.environment }}
           INPUT_VERSION: ${{ inputs.version }}
           REF_NAME: ${{ github.ref_name }}
+          AZURE_CONTAINER_REGISTRY: ${{ vars.AZURE_CONTAINER_REGISTRY }}
         run: | # Bash script
           set -euo pipefail
           microservice_name=$(basename "${MICROSERVICE_PATH}")
