@@ -54,7 +54,8 @@ jobs:
       
       - name: Filter output # We need to differ how to proceed output for standard push with path filtering and pushing git tag
         id: filter-output
-        run: | # Bash script
+        shell: bash
+        run: |
           set -euo pipefail
 
           if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
@@ -88,6 +89,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:  
+          fetch-depth: 0 # To provide git describe working correctly we need to load full git history
 
       - name: Azure Login (OIDC) # We are using OIDC Federated Workload Identity to authenticate in Azure and get permissions to push container images
         uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
@@ -109,22 +112,24 @@ jobs:
         id: image-tag
         env:
           MICROSERVICE_PATH: ${{ matrix.microservice }}
-          ENVIRONMENT: ${{ inputs.environment }}
-          INPUT_VERSION: ${{ inputs.version }}
-          REF_NAME: ${{ github.ref_name }}
+          ENVIRONMENT: ${{ needs.filter.outputs.environment }}
+          INPUT_VERSION: ${{ needs.filter.outputs.version }}
           AZURE_CONTAINER_REGISTRY: ${{ vars.AZURE_CONTAINER_REGISTRY }}
-        run: | # Bash script
+        shell: bash
+        run: |
           set -euo pipefail
+          
           microservice_name=$(basename "${MICROSERVICE_PATH}")
+          prefix=$(git describe --tags --always --first-parent --match "${microservice_name}@*.*.*")
 
-          if [[ -n "${INPUT_VERSION}" && "${INPUT_VERSION}" != "null" ]]; then
+          if [[ -n "${INPUT_VERSION}" ]]; then
             tag="${INPUT_VERSION}"
           
           elif [[ "${ENVIRONMENT}" == "staging" || "${ENVIRONMENT}" == "production" ]]; then
-            tag="${REF_NAME##*@}"
-
+            tag="${prefix##*@}"
+            tag="${tag%%-*}"  # v1.0.0 for staging and production images
           else
-            tag=$(git describe --tags --always --first-parent --match "${microservice_name}@*.*.*")
+            tag="${prefix##*@}" # v1.0.0-1-abc1234 for testing images
           fi
           
           echo "generated_tag=${AZURE_CONTAINER_REGISTRY}/${microservice_name}:${tag}" >> "$GITHUB_OUTPUT"
