@@ -47,13 +47,12 @@ jobs:
           echo "commit_message=${commit_message}" >> "$GITHUB_OUTPUT"
 
       - name: Update GitOps Manifest
-        working-directory: infrastructure/kubernetes/microservices/${{ inputs.microservice }}
+        working-directory: infrastructure/kubernetes/microservices/${{ inputs.microservice }}/overlays/${{ inputs.environment }}
         shell: bash
         run: |
           set -euo pipefail
 
-          yq -i '.images[0].newTag = "${{ inputs.image_tag }}"' \
-              overlays/${{ inputs.environment }}/kustomization.yaml
+          sed -i "s/newTag:.*/newTag: ${{ inputs.image_tag }}/" kustomization.yaml
 
       - name: Commit and Push Changes
         shell: bash
@@ -71,7 +70,3 @@ jobs:
           git commit -am "${{ steps.commit-message.outputs.commit_message }}"
 
           git push
-
-
-
-
