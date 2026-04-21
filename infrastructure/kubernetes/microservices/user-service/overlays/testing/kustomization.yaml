@@ -8,4 +8,4 @@ replicas:
 images:
   - name: acrdevopsproject.azurecr.io/user-service
     newName: acrdevopsprojecttest.azurecr.io/user-service
-    newTag: IMAGE_TAG
+    newTag: v1.0.0-9-g99b96ae
