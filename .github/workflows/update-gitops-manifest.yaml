@@ -49,14 +49,11 @@ jobs:
       - name: Update GitOps Manifest
         working-directory: infrastructure/kubernetes/microservices/${{ inputs.microservice }}
         shell: bash
-        env: 
-          IMAGE_TAG: ${{ inputs.image_tag }}
-          ENVIRONMENT: ${{ inputs.environment }}
         run: |
           set -euo pipefail
 
-          yq -i '.images[0].newTag = "IMAGE_TAG"' \
-              overlays/${ENVIRONMENT}/kustomization.yaml
+          yq -i '.images[0].newTag = "${{ inputs.image_tag }}"' \
+              overlays/${{ inputs.environment }}/kustomization.yaml
 
       - name: Commit and Push Changes
         shell: bash
