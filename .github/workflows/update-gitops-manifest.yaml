@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
 
           commit_message="Chore: Update GitOps ${{ inputs.environment }} manifest for ${{ inputs.microservice }} to version ${{ inputs.image_tag }}"
-          echo "commit_message=${commit_message}" >> "GITHUB_OUTPUT"
+          echo "commit_message=${commit_message}" >> "$GITHUB_OUTPUT"
 
       - name: Update GitOps Manifest
         working-directory: infrastructure/kubernetes/microservices/${{ inputs.microservice }}
