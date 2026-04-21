@@ -4,11 +4,11 @@ WORKDIR /build
 # Cache this layer to speed up workflow
 COPY pom.xml .
 
-RUN --mount=type=cache,target=/root/.m2 mvn verify --fail-never -B
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -B -q
 
 COPY src ./src
 
-RUN mvn clean package -DskipTests -B -o
+RUN --mount=type=cache,target=/root/.m2 mvn package -DskipTests -B -q
 
 FROM eclipse-temurin:25-jre-ubi10-minimal AS development
 

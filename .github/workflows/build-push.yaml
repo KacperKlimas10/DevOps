@@ -1,4 +1,4 @@
-name: Build and Push (Building Stage)
+name: 'CI: Build and Push (Building Stage)'
 
 on:
   push:
@@ -90,7 +90,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:  
-          fetch-depth: 0 # To provide git describe working correctly we need to load full git history
+          fetch-depth: 0 # To provide git describe working correctly we need to load full Git history
 
       - name: Azure Login (OIDC) # We are using OIDC Federated Workload Identity to authenticate in Azure and get permissions to push container images
         uses: azure/login@532459ea530d8321f2fb9bb10d1e0bcf23869a43 # v3.0.0
@@ -109,7 +109,7 @@ jobs:
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Generate Image Tag
-        id: image-tag
+        id: image
         env:
           MICROSERVICE_PATH: ${{ matrix.microservice }}
           ENVIRONMENT: ${{ needs.filter.outputs.environment }}
@@ -132,14 +132,27 @@ jobs:
             tag="${prefix##*@}" # v1.0.0-1-abc1234 for testing images
           fi
           
-          echo "generated_tag=${AZURE_CONTAINER_REGISTRY}/${microservice_name}:${tag}" >> "$GITHUB_OUTPUT"
+          echo "generated_tag=${tag}" >> "$GITHUB_OUTPUT"
+          echo "generated_image=${AZURE_CONTAINER_REGISTRY}/${microservice_name}:${tag}" >> "$GITHUB_OUTPUT"
 
       - name: Build and Push Container Images
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
-          tags: ${{ steps.image-tag.outputs.generated_tag }}
+          tags: ${{ steps.image.outputs.generated_image }}
           platforms: linux/amd64,linux/arm64 # Multiarch build
           push: true # Push after building stage 
           context: ${{ matrix.microservice }} # Path to Dockerfile
           cache-from: type=gha # To optimize building results we are using Docker Cache
           cache-to: type=gha,mode=max
+      
+      - name: Run Update GitOps Manifest Workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh workflow run update-gitops-manifest.yaml \
+            -f microservice=$(basename "${{ matrix.microservice }}") \
+            -f image_tag="${{ steps.image.outputs.generated_tag }}" \
+            -f environment="${{ needs.filter.outputs.environment }}"

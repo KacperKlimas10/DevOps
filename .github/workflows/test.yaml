@@ -1,4 +1,4 @@
-name: Run Tests (Validation Stage)
+name: 'CI: Run Tests (Validation Stage)'
 
 on:
   push:
