@@ -55,7 +55,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          yq -i -y '.images[0].newTag = "IMAGE_TAG"' \
+          yq -i '.images[0].newTag = "IMAGE_TAG"' \
               overlays/${ENVIRONMENT}/kustomization.yaml
 
       - name: Commit and Push Changes
