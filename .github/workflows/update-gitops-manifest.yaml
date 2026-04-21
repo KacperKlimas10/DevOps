@@ -1,0 +1,80 @@
+name: 'CI: Update GitOps Manifest (Deployment Stage)'
+
+on:
+  workflow_dispatch:
+    inputs:
+      microservice:
+        description: 'Microservice to be deployed'
+        required: true
+        type: choice
+        options: 
+          - user-service
+          - storage-service
+          - demo-go
+          - demo-python
+      image_tag:
+        description: 'Microservice image tag to be deployed'
+        required: true
+        type: string
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options: 
+          - testing 
+          - staging
+          - production
+
+jobs:
+  update-gitops:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    environment: ${{ inputs.environment }}   
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: master
+      
+      - name: Generate Git Commit Message
+        id: commit-message
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          commit_message="Chore: Update GitOps ${{ inputs.environment }} manifest for ${{ inputs.microservice }} to version ${{ inputs.image_tag }}"
+          echo "commit_message=${commit_message}" >> "GITHUB_OUTPUT"
+
+      - name: Update GitOps Manifest
+        working-directory: infrastructure/kubernetes/microservices/${{ inputs.microservice }}
+        shell: bash
+        env: 
+          IMAGE_TAG: ${{ inputs.image_tag }}
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          set -euo pipefail
+
+          yq -i -y '.images[0].newTag = "IMAGE_TAG"' \
+              overlays/${ENVIRONMENT}/kustomization.yaml
+
+      - name: Commit and Push Changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          if git diff --quiet; then
+            echo "Nothing to commit"
+            exit 0
+          fi
+            
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git commit -am "${{ steps.commit-message.outputs.commit_message }}"
+
+          git push
+
+
+
+
