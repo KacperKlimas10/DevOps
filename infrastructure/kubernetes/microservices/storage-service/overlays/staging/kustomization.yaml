@@ -8,4 +8,4 @@ replicas:
 images:
   - name: acrdevopsproject.azurecr.io/storage-service
     newName: acrdevopsprojectstag.azurecr.io/storage-service
-    newTag: v1.0
+    newTag: v1.0.0
