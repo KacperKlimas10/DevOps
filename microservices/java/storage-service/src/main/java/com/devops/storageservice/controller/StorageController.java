@@ -20,7 +20,7 @@ public class StorageController {
     public ResponseEntity<String> helloStorage() {
         return ResponseEntity
                 .ok()
-                .body("Hello from storage-service v1 :)");
+                .body("Hello from storage-service after CI/CD finish :)");
     }
 
     @PostMapping("/file")
