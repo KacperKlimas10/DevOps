@@ -9,7 +9,7 @@ spec:
 
     - git:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        revision: feature/argocd-testing
+        revision: master
         directories:
           - path: infrastructure/kubernetes/microservices/*/overlays/staging
 
@@ -25,7 +25,7 @@ spec:
       project: devops-project-staging
       source:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        targetRevision: feature/argocd-testing
+        targetRevision: master
         path: '{{ .path.path }}'
       destination:
         server: https://kubernetes.default.svc

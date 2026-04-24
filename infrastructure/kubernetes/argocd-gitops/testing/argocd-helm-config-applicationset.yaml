@@ -9,7 +9,7 @@ spec:
 
     - git:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        revision: feature/argocd-testing
+        revision: master
         files:
           - path: infrastructure/kubernetes/infrastructure/custom-resources/*/config.yaml
 
@@ -25,7 +25,7 @@ spec:
       project: devops-project-testing
       source:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        targetRevision: feature/argocd-testing
+        targetRevision: master
       destination:
         server: https://kubernetes.default.svc
 
@@ -36,15 +36,6 @@ spec:
         path: {{ .path.path }}/overlays/testing
       {{- else }}
         path: {{ .path.path }}
-      {{- end }}
-      ignoreDifferences: # This feature allows to ignore fields which makes OutOfSync status
-      {{- range .ignoreDifferences }}
-        - group: {{ .group }}
-          kind:  {{ .kind }}
-          jsonPointers:
-          {{- range .jsonPointers }}
-            - {{ . }}
-          {{- end }}
       {{- end }}
       syncPolicy:
         automated: 

@@ -9,26 +9,32 @@ spec:
 
     - git:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        revision: feature/argocd-testing
+        revision: master
         directories:
-          - path: infrastructure/kubernetes/microservices/*/overlays/testing
+          - path: infrastructure/kubernetes/microservices/*/testing
 
   template:
     metadata:
       name: 'microservice-{{ index .path.segments 3 }}-testing'
       namespace: argocd
       finalizers:
-        - resources-finalizer.argocd.argoproj.io  # Cascade delete
+        - resources-finalizer.argocd.argoproj.io
       annotations:
         argocd.argoproj.io/sync-wave: "3"
     spec:
       project: devops-project-testing
-      source:
-        repoURL: https://github.com/KacperKlimas10/DevOps.git
-        targetRevision: feature/argocd-testing
-        path: '{{ .path.path }}'
       destination:
         server: https://kubernetes.default.svc
+      sources:
+        - repoURL: https://github.com/KacperKlimas10/DevOps.git
+          chart: infrastructure/kubernetes/helm-charts/microservice
+          targetRevision: v1.0.0
+          helm:
+            valueFiles: # My charts have a custom values files or default
+              - $values/{{ .path.path }}/values.yaml  # Reference to values files in my Git repository
+        - repoURL: https://github.com/KacperKlimas10/DevOps.git
+          targetRevision: master
+          ref: values
       syncPolicy:
         automated: 
           prune: true

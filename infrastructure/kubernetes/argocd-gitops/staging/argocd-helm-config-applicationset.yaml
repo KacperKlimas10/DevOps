@@ -9,7 +9,7 @@ spec:
 
     - git:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        revision: feature/argocd-testing
+        revision: master
         files:
           - path: infrastructure/kubernetes/infrastructure/custom-resources/*/config.yaml
 
@@ -25,7 +25,7 @@ spec:
       project: devops-project-staging
       source:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        targetRevision: feature/argocd-testing
+        targetRevision: master
       destination:
         server: https://kubernetes.default.svc
 

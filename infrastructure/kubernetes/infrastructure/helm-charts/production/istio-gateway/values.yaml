@@ -1,5 +1,0 @@
-name: istio-ingressgateway
-labels:
-  istio: ingressgateway
-service:
-  type: LoadBalancer

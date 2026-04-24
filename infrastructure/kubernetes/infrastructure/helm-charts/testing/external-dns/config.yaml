@@ -1,8 +1,0 @@
-# External DNS
-chart: external-dns
-repoURL: https://kubernetes-sigs.github.io/external-dns/
-targetRevision: 1.19.0
-releaseName: external-dns
-namespace: external-dns
-syncOptions:
-  - CreateNamespace=true

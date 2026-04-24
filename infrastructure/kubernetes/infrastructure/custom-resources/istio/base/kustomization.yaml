@@ -2,9 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - argocd-virtual-service.yaml
-  - devops-ingress-gateway.yaml
+  - ingressgateway.yaml
   - grafana-virtual-service.yaml
-  - mtls-lockdown-peer-authentication.yaml
+  - peerauthentication.yaml
   - rabbitmq-virtual-service.yaml
   - storage-service-destination-rule.yaml
   - storage-service-virtual-service.yaml

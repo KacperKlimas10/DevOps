@@ -9,9 +9,9 @@ spec:
 
     - git: # Git generator automatically detects new helm chart folder and applies to cluster
         repoURL: https://github.com/KacperKlimas10/DevOps.git
-        revision: feature/argocd-testing
+        revision: master
         files:
-          - path: infrastructure/kubernetes/infrastructure/helm-charts/production/*/config.yaml
+          - path: infrastructure/kubernetes/infrastructure/helm/production/*/config.yaml
 
   template:
     metadata:
@@ -40,7 +40,7 @@ spec:
               {{ . }}
             {{- end }}
         - repoURL: https://github.com/KacperKlimas10/DevOps.git
-          targetRevision: feature/argocd-testing
+          targetRevision: master
           ref: values
       ignoreDifferences: # This feature allows to ignore fields which makes OutOfSync status
       {{- range .ignoreDifferences }}

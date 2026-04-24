@@ -103,11 +103,11 @@ jobs:
       - name: Azure ACR Login
         run: az acr login -n ${{ vars.AZURE_CONTAINER_REGISTRY }}
       
-      - name: Set up QEMU # Setting up Qemu and buildix for multiarch image bulding like AMD64 and ARM64
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+      # - name: Set up QEMU # Setting up Qemu and buildix for multiarch image bulding like AMD64 and ARM64
+      #   uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
                                             
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
 
       - name: Generate Image Tag
         id: image
@@ -140,7 +140,7 @@ jobs:
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
         with:
           tags: ${{ steps.image.outputs.generated_image }}
-          platforms: linux/amd64,linux/arm64 # Multiarch build
+          platforms: linux/amd64 #,linux/arm64 # Multiarch build
           push: true # Push after building stage 
           context: ${{ matrix.microservice }} # Path to Dockerfile
           cache-from: type=gha # To optimize building results we are using Docker Cache
