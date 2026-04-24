@@ -1,0 +1,41 @@
+image:
+  repository: acrdevopsproject.azurecr.io/storage-service
+  tag: "v1.0"
+
+namespace: prod
+
+env:
+  SERVER_PORT: "8080"
+  RABBITMQ_HOST: rabbitmq.rabbitmq-system.svc.cluster.local
+
+secretEnv:
+  - name: BUCKET_ENDPOINT
+    secretName: cloudflare-r2-credentials
+    key: apiUri
+  - name: BUCKET_ACCESS_KEY
+    secretName: cloudflare-r2-credentials
+    key: accessKeyId
+  - name: BUCKET_SECRET_KEY
+    secretName: cloudflare-r2-credentials
+    key: secretAccessKey
+
+virtualService:
+  enabled: true
+  host: devops.kacperklimas.com
+  gateway: istio-ingress/application-gateway
+  uriPrefix: /api/storage
+  weights:
+    v1: 100
+    v2: 0
+    v3: 0
+
+destinationRule:
+  enabled: true
+  loadBalancer: LEAST_REQUEST
+  subsets:
+    - name: v1
+      version: v1.0
+    - name: v2
+      version: v2.0
+    - name: v3
+      version: v3.0

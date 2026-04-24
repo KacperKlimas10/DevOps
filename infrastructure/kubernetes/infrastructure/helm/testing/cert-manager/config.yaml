@@ -1,0 +1,9 @@
+# Cert Manager
+chart: cert-manager
+syncWave: "-3"
+repoURL: https://charts.jetstack.io
+targetRevision: v1.19.1
+releaseName: cert-manager
+namespace: cert-manager
+syncOptions:
+  - CreateNamespace=true

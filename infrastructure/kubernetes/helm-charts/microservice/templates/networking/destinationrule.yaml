@@ -1,0 +1,23 @@
+{{- if .Values.destinationRule.enabled }}
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: {{ include "microservice.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "microservice.labels" . | nindent 4 }}
+spec:
+  host: {{ include "microservice.fqdn" . }}
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    loadBalancer:
+      simple: {{ .Values.destinationRule.loadBalancer }}
+  subsets:
+    {{- range .Values.destinationRule.subsets }}
+    - name: {{ .name }}
+      labels:
+        app: {{ include "microservice.fullname" $ }}
+        version: {{ .version }}
+    {{- end }}
+{{- end }}

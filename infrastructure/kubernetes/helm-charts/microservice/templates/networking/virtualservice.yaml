@@ -1,0 +1,37 @@
+{{- if .Values.virtualService.enabled }}
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: {{ include "microservice.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "microservice.labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{ .Values.virtualService.host }}
+  gateways:
+    - {{ .Values.virtualService.gateway }}
+  http:
+    - match:
+        - uri:
+            prefix: {{ .Values.virtualService.uriPrefix }}
+      route:
+        - destination:
+            host: {{ include "microservice.fqdn" . }}
+            port:
+              number: {{ .Values.service.port }}
+            subset: v1
+          weight: {{ .Values.virtualService.weights.v1 }}
+        - destination:
+            host: {{ include "microservice.fqdn" . }}
+            port:
+              number: {{ .Values.service.port }}
+            subset: v2
+          weight: {{ .Values.virtualService.weights.v2 }}
+        - destination:
+            host: {{ include "microservice.fqdn" . }}
+            port:
+              number: {{ .Values.service.port }}
+            subset: v3
+          weight: {{ .Values.virtualService.weights.v3 }}
+{{- end }}

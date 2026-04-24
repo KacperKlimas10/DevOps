@@ -1,0 +1,41 @@
+image:
+  repository: acrdevopsproject.azurecr.io/user-service
+  tag: "v1.0"
+
+namespace: prod
+
+env:
+  SERVER_PORT: "8080"
+  RABBITMQ_HOST: rabbitmq.rabbitmq-system.svc.cluster.local
+
+secretEnv:
+  - name: POSTGRESQL_URI
+    secretName: postgresql-credentials
+    key: uri
+  - name: POSTGRESQL_USERNAME
+    secretName: postgresql-credentials
+    key: username
+  - name: POSTGRESQL_PASSWORD
+    secretName: postgresql-credentials
+    key: password
+
+virtualService:
+  enabled: true
+  host: devops.kacperklimas.com
+  gateway: istio-ingress/application-gateway
+  uriPrefix: /api/user
+  weights:
+    v1: 100
+    v2: 0
+    v3: 0
+
+destinationRule:
+  enabled: true
+  loadBalancer: LEAST_REQUEST
+  subsets:
+    - name: v1
+      version: v1.0
+    - name: v2
+      version: v2.0
+    - name: v3
+      version: v3.0
