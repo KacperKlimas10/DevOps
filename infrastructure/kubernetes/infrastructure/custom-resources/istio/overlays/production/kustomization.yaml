@@ -36,13 +36,3 @@ patches:
       - op: replace
         path: /spec/hosts/0
         value: devops-production.kacperklimas.com
-  - target:
-      group: networking.istio.io
-      version: v1
-      kind: VirtualService
-      name: rabbitmq-http-virtualservice
-      namespace: rabbitmq-system
-    patch: |-
-      - op: replace
-        path: /spec/hosts/0
-        value: devops-production.kacperklimas.com
