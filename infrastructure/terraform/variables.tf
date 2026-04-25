@@ -44,7 +44,7 @@ variable "azure_vpn_path_to_cert" {
 variable "argocd_path_to_values" {
   type        = string
   description = "Path to ArgoCD Helm values.yaml"
-  default     = "../kubernetes/infrastructure/helm-charts/production/argocd/values.yaml"
+  default     = "../kubernetes/infrastructure/helm/production/argocd/values.yaml"
 }
 
 variable "github_actions_oidc_subject" {

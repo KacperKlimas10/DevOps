@@ -428,32 +428,32 @@ module "azure_aks" {
     zones                = ["1", "2", "3"] # All Availability Zones
     tags                 = var.azure_application_tags
   }
-  node_pools = {
-    "node1" = { # User Node VirtualMachineScaleSets
-      name                 = "usrnode1"
-      vm_size              = "Standard_D2ds_v4" # 2 vCPU 4 GB
-      os_sku               = "AzureLinux"
-      auto_scaling_enabled = true
-      min_count            = 1
-      node_count           = 1
-      max_count            = 3
-      vnet_subnet_id       = module.azure_node_vnet.subnets["subnet2"].resource_id
-      zones                = ["1", "2", "3"] # All Availability Zones
-      tags                 = var.azure_application_tags
-    }
-    "node2" = { # User Node VirtualMachineScaleSets
-      name                 = "usrnode2"
-      vm_size              = "Standard_D2ds_v4" # 2 vCPU 4 GB
-      os_sku               = "AzureLinux"
-      auto_scaling_enabled = true
-      min_count            = 1
-      node_count           = 1
-      max_count            = 3
-      vnet_subnet_id       = module.azure_node_vnet.subnets["subnet3"].resource_id
-      zones                = ["1", "2", "3"] # All Availability Zones
-      tags                 = var.azure_application_tags
-    }
-  }
+  # node_pools = {
+  #   "node1" = { # User Node VirtualMachineScaleSets
+  #     name                 = "usrnode1"
+  #     vm_size              = "Standard_D2ds_v4" # 2 vCPU 4 GB
+  #     os_sku               = "AzureLinux"
+  #     auto_scaling_enabled = true
+  #     min_count            = 1
+  #     node_count           = 1
+  #     max_count            = 3
+  #     vnet_subnet_id       = module.azure_node_vnet.subnets["subnet2"].resource_id
+  #     zones                = ["1", "2", "3"] # All Availability Zones
+  #     tags                 = var.azure_application_tags
+  #   }
+  #   "node2" = { # User Node VirtualMachineScaleSets
+  #     name                 = "usrnode2"
+  #     vm_size              = "Standard_D2ds_v4" # 2 vCPU 4 GB
+  #     os_sku               = "AzureLinux"
+  #     auto_scaling_enabled = true
+  #     min_count            = 1
+  #     node_count           = 1
+  #     max_count            = 3
+  #     vnet_subnet_id       = module.azure_node_vnet.subnets["subnet3"].resource_id
+  #     zones                = ["1", "2", "3"] # All Availability Zones
+  #     tags                 = var.azure_application_tags
+  #   }
+  # }
   network_profile = {
     network_plugin      = "azure",
     network_plugin_mode = "overlay",

@@ -5,8 +5,3 @@ resources:
   - ingressgateway.yaml
   - grafana-virtual-service.yaml
   - peerauthentication.yaml
-  - rabbitmq-virtual-service.yaml
-  - storage-service-destination-rule.yaml
-  - storage-service-virtual-service.yaml
-  - user-service-destination-rule.yaml
-  - user-service-virtual-service.yaml

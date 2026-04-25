@@ -79,6 +79,7 @@ jobs:
     runs-on: ubuntu-24.04      
     needs: filter
     if: ${{ needs.filter.outputs.microservices != '[]' && needs.filter.outputs.microservices != '' }}
+    environment: ${{ needs.filter.outputs.environment }}
     strategy:
       matrix:
         microservice: ${{ fromJson(needs.filter.outputs.microservices) }}

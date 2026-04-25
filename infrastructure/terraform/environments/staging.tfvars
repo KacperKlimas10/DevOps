@@ -7,7 +7,7 @@ azure_region          = "polandcentral"
 
 github_actions_oidc_subject = "repo:organization/repository"
 
-argocd_path_to_values = "../kubernetes/infrastructure/helm-charts/staging/argocd/values.yaml"
+argocd_path_to_values = "../kubernetes/infrastructure/helm/staging/argocd/values.yaml"
 
 azure_application_tags = {
   "appname" : "foobazz"
