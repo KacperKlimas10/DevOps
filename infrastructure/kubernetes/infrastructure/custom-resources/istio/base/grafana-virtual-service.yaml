@@ -11,7 +11,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /grafana
+            prefix: /
       route:
         - destination:
             host: helm-prometheus-stack-testing-grafana.istio-system.svc.cluster.local

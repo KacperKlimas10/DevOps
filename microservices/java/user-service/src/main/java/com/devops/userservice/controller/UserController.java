@@ -17,7 +17,7 @@ public class UserController {
     public ResponseEntity<String> helloUser() {
         return ResponseEntity
                 .ok()
-                .body("Hello from user-service after CI/CD finish:)");
+                .body("Hello from user-service after Istio and Argo update :D");
     }
 
     @PostMapping
