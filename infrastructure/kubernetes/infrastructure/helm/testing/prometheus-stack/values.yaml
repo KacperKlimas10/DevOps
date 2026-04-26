@@ -1,6 +1,5 @@
 grafana:
   ingress: # This is needed for setting correct hostname to Grafana, it creates useless Ingress resource
-    enabled: true
+    enabled: false
     hosts:
-      - devops-testing.kacperklimas.com
-    path: /grafana
+      - grafana-testing.kacperklimas.com

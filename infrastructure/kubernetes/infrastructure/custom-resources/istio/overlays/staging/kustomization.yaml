@@ -14,8 +14,20 @@ patches:
         path: /spec/servers/0/hosts/0
         value: devops-staging.kacperklimas.com  
       - op: replace
+        path: /spec/servers/0/hosts/1
+        value: argocd-staging.kacperklimas.com
+      - op: replace
+        path: /spec/servers/0/hosts/2
+        value: grafana-staging.kacperklimas.com    
+      - op: replace
         path: /spec/servers/1/hosts/0
         value: devops-staging.kacperklimas.com
+      - op: replace
+        path: /spec/servers/1/hosts/1
+        value: argocd-staging.kacperklimas.com
+      - op: replace
+        path: /spec/servers/1/hosts/2
+        value: grafana-staging.kacperklimas.com
   - target:
       group: networking.istio.io
       version: v1
@@ -25,7 +37,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hosts/0
-        value: devops-staging.kacperklimas.com
+        value: argocd-staging.kacperklimas.com
   - target:
       group: networking.istio.io
       version: v1
@@ -35,4 +47,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/hosts/0
-        value: devops-staging.kacperklimas.com
+        value: grafana-staging.kacperklimas.com

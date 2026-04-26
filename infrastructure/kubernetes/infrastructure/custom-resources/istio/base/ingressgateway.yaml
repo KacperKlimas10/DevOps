@@ -13,6 +13,8 @@ spec:
         protocol: HTTP2
       hosts:
         - devops.kacperklimas.com
+        - argocd.kacperklimas.com
+        - grafana.kacperklimas.com
       tls:
         httpsRedirect: true # Redirect from HTTP to HTTPS
     - port:

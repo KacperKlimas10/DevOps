@@ -1,6 +1,6 @@
 image:
   repository: acrdevopsprojecttest.azurecr.io/storage-service
-  tag: v1.0.0-21-gf00858e
+  tag: &imageTag v1.0.0-21-gf00858e
 
 namespace: prod
 
@@ -26,16 +26,10 @@ virtualService:
   uriPrefix: /api/storage
   weights:
     v1: 100
-    v2: 0
-    v3: 0
 
 destinationRule:
   enabled: true
   loadBalancer: LEAST_REQUEST
   subsets:
     - name: v1
-      version: v1.0
-    - name: v2
-      version: v2.0
-    - name: v3
-      version: v3.0
+      version: *imageTag
