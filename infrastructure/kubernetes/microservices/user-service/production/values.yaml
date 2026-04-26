@@ -21,7 +21,7 @@ secretEnv:
 
 virtualService:
   enabled: true
-  host: devops.kacperklimas.com
+  host: devops-production.kacperklimas.com
   gateway: istio-ingress/application-gateway
   uriPrefix: /api/user
   weights:
