@@ -52,7 +52,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          sed -i "s/tag:.*/tag: ${{ inputs.image_tag }}/" values.yaml
+          sed -i "s/tag:.*/tag: &imageTag ${{ inputs.image_tag }}/" values.yaml
 
       - name: Commit and Push Changes
         shell: bash
