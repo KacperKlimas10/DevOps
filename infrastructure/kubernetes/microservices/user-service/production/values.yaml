@@ -1,5 +1,5 @@
 image:
-  repository: acrdevopsproject.azurecr.io/user-service
+  repository: acrdevopsprojectprodu.azurecr.io/user-service
   tag: "v1.0"
 
 namespace: prod

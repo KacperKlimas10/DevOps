@@ -1,5 +1,5 @@
 image:
-  repository: acrdevopsproject.azurecr.io/storage-service
+  repository: acrdevopsprojectprodu.azurecr.io/storage-service
   tag: "v1.0"
 
 namespace: prod

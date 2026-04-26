@@ -27,8 +27,8 @@ spec:
         server: https://kubernetes.default.svc
       sources:
         - repoURL: https://github.com/KacperKlimas10/DevOps.git
-          chart: infrastructure/kubernetes/helm-charts/microservice
-          targetRevision: v1.0.0
+          path: infrastructure/kubernetes/helm-charts/microservice
+          targetRevision: master
           helm:
             valueFiles: # My charts have a custom values files or default
               - $values/{{ .path.path }}/values.yaml  # Reference to values files in my Git repository
