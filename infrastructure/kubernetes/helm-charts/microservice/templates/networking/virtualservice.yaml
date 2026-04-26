@@ -16,22 +16,12 @@ spec:
         - uri:
             prefix: {{ .Values.virtualService.uriPrefix }}
       route:
+        {{- range .Values.virtualService.subsets }}
         - destination:
+            subset: {{ .name }}
             host: {{ include "microservice.fqdn" . }}
             port:
               number: {{ .Values.service.port }}
-            subset: v1
-          weight: {{ .Values.virtualService.weights.v1 }}
-        - destination:
-            host: {{ include "microservice.fqdn" . }}
-            port:
-              number: {{ .Values.service.port }}
-            subset: v2
-          weight: {{ .Values.virtualService.weights.v2 }}
-        - destination:
-            host: {{ include "microservice.fqdn" . }}
-            port:
-              number: {{ .Values.service.port }}
-            subset: v3
-          weight: {{ .Values.virtualService.weights.v3 }}
+          weight: {{ .weight }}
+        {{- end }}  
 {{- end }}

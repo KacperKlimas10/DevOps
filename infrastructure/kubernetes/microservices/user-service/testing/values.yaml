@@ -24,8 +24,9 @@ virtualService:
   host: devops-testing.kacperklimas.com
   gateway: istio-ingress/application-gateway
   uriPrefix: /api/user
-  weights:
-    v1: 100
+  subsets:
+    - name: v1
+      weight: 100
 
 destinationRule:
   enabled: true
