@@ -23,6 +23,8 @@ spec:
         protocol: HTTPS
       hosts:
         - devops.kacperklimas.com   # This should match a DNS name in the Certificate
+        - argocd.kacperklimas.com
+        - grafana.kacperklimas.com
       tls:
         mode: SIMPLE
         credentialName: app-ingress-gateway-cert  # This should match the Certificate secretName
