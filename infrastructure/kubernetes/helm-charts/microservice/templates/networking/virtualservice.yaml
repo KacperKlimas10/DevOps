@@ -19,7 +19,7 @@ spec:
         {{- range .Values.virtualService.subsets }}
         - destination:
             subset: {{ .name }}
-            host: {{ include "microservice.fqdn" . }}
+            host: {{ include "microservice.fqdn" $ }}
             port:
               number: {{ .Values.service.port }}
           weight: {{ .weight }}
