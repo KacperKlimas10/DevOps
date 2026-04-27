@@ -1,6 +1,6 @@
 image:
   repository: acrdevopsprojecttest.azurecr.io/user-service
-  tag: &imageTag v1.0.0-32-g4b047e6
+  tag: &imageTag v1.0.0-37-gbe4a455
 
 namespace: prod
 
