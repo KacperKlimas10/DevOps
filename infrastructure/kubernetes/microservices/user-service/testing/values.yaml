@@ -19,6 +19,9 @@ secretEnv:
     secretName: postgresql-credentials
     key: password
 
+healthCheck:
+  enabled: false
+  
 virtualService:
   enabled: true
   host: devops-testing.kacperklimas.com

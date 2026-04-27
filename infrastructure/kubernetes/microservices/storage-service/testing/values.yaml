@@ -19,6 +19,9 @@ secretEnv:
     secretName: cloudflare-r2-credentials
     key: secretAccessKey
 
+healthCheck:
+  enabled: false
+
 virtualService:
   enabled: true
   host: devops.kacperklimas.com
