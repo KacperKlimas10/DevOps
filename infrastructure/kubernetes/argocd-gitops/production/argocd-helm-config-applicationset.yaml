@@ -37,15 +37,6 @@ spec:
       {{- else }}
         path: {{ .path.path }}
       {{- end }}
-      ignoreDifferences: # This feature allows to ignore fields which makes OutOfSync status
-      {{- range .ignoreDifferences }}
-        - group: {{ .group }}
-          kind:  {{ .kind }}
-          jsonPointers:
-          {{- range .jsonPointers }}
-            - {{ . }}
-          {{- end }}
-      {{- end }}
       syncPolicy:
         automated: 
           enabled: false

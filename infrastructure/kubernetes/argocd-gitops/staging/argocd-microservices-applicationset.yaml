@@ -11,28 +11,36 @@ spec:
         repoURL: https://github.com/KacperKlimas10/DevOps.git
         revision: master
         directories:
-          - path: infrastructure/kubernetes/microservices/*/overlays/staging
+          - path: infrastructure/kubernetes/microservices/*/staging
 
   template:
     metadata:
       name: 'microservice-{{ index .path.segments 3 }}-staging'
       namespace: argocd
       finalizers:
-        - resources-finalizer.argocd.argoproj.io  # Cascade delete
+        - resources-finalizer.argocd.argoproj.io
       annotations:
         argocd.argoproj.io/sync-wave: "3"
     spec:
       project: devops-project-staging
-      source:
-        repoURL: https://github.com/KacperKlimas10/DevOps.git
-        targetRevision: master
-        path: '{{ .path.path }}'
       destination:
         server: https://kubernetes.default.svc
+      sources:
+        - repoURL: https://github.com/KacperKlimas10/DevOps.git
+          path: infrastructure/kubernetes/helm-charts/microservice
+          targetRevision: master
+          helm:
+            valueFiles: # My charts have a custom values files or default
+              - $values/{{ .path.path }}/values.yaml  # Reference to values files in my Git repository
+        - repoURL: https://github.com/KacperKlimas10/DevOps.git
+          targetRevision: master
+          ref: values
       syncPolicy:
         automated: 
           prune: true
           selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
         managedNamespaceMetadata:
           labels:
             istio-injection: enabled  # To inject sidecar proxy automatically we need set this label
