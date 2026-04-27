@@ -4,6 +4,9 @@ image:
 
 namespace: prod
 
+healthCheck:
+  enabled: false
+
 virtualService:
   enabled: true
   host: devops-testing.kacperklimas.com
