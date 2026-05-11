@@ -11,7 +11,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: /argocd
+            prefix: /
       route:
         - destination:
             host: argo-cd-argocd-server.argocd.svc.cluster.local
