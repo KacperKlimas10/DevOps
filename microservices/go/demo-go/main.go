@@ -9,7 +9,7 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/api/demo-go", func(c *gin.Context) {
-		c.String(200, "Hello from demo-go version after CI/CD finish :)")
+		c.String(200, "11.05.2026")
 	})
 
 	r.Run(":8080")
