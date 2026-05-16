@@ -1,26 +1,5 @@
 /* CLOUDFLARE */
 
-# DNS
-resource "cloudflare_dns_record" "azure_vpn_dns_record" {
-  name    = "vpn-${local.env}"
-  ttl     = 1 # Auto
-  type    = "A"
-  proxied = false # Cloudflare proxy is blocking some protocols used to vpn connection
-  zone_id = var.cloudflare_dns_zone_id
-  comment = "A record for Azure VPN Gateway"
-  content = azurerm_public_ip.vpn_public_ip.ip_address
-}
-
-resource "cloudflare_dns_record" "azure_registry_dns_record" {
-  name    = "registry-${local.env}"
-  ttl     = 1 # Auto TTL for proxied record
-  type    = "CNAME"
-  proxied = true
-  zone_id = var.cloudflare_dns_zone_id
-  comment = "CNAME record for Azure Container Registry"
-  content = data.azurerm_container_registry.azure_container_registry.login_server
-}
-
 # R2 OBJECT STORAGE
 resource "cloudflare_r2_bucket" "devops_r2_bucket" {
   account_id    = var.cloudflare_account_id

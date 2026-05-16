@@ -11,4 +11,4 @@ patches:
     patch: |- # JSON6902 Patches
       - op: replace
         path: /spec/provider/azurekv/vaultUrl
-        value: https://kv-devopsproject-test.vault.azure.net
+        value: https://kv-devopsproject-testing.vault.azure.net
