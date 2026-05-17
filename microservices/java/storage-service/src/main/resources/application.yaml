@@ -1,14 +1,19 @@
+env:
+  aws:
+    bucket:
+      name: bucket
+
 spring:
   application:
     name: "storage-service"
   cloud:
     aws:
       credentials:
-        access-key: "${BUCKET_ACCESS_KEY}:kacperkacper"
-        secret-key: "${BUCKET_SECRET_KEY}:kacperkacper"
+        access-key: "${BUCKET_ACCESS_KEY:kacperkacper}"
+        secret-key: "${BUCKET_SECRET_KEY:kacperkacper}"
       s3:
         endpoint: "${BUCKET_ENDPOINT:http://localhost:9000}"
-        region: "${BUCKET_REGION}:us-east-1" # Auto region for Minio and R2
+        region: "${BUCKET_REGION:us-east-1}" # Auto region for Minio and R2
   rabbitmq:
     username: "${RABBITMQ_USERNAME:kacper}"
     password: "${RABBITMQ_PASSWORD:kacper}"

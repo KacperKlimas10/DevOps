@@ -3,7 +3,7 @@ services:
   # MICROSERVICES
 
   storage-service:
-    image: acrdevopsprojectprod.azurecr.io/storage-service:v1.0
+    image: storage-service:v1.0
     build:
       context: ../../microservices/java/storage-service
       dockerfile: Dockerfile
@@ -29,7 +29,7 @@ services:
       start_interval: 5s
 
   user-service:
-    image: acrdevopsprojectprod.azurecr.io/user-service:v1.0
+    image: user-service:v1.0
     build:
       context: ../../microservices/java/user-service
       dockerfile: Dockerfile
@@ -54,9 +54,9 @@ services:
       start_interval: 5s
   
   go-demo-service:
-    image: acrdevopsprojectprod.azurecr.io/user-service:v1.0
+    image: demo-go:v1.0
     build:
-      context: ../../microservices/java/user-service
+      context: ../../microservices/go/demo-go
       dockerfile: Dockerfile
       target: development
     restart: on-failure

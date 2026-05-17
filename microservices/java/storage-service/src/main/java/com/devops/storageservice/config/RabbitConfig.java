@@ -8,12 +8,4 @@ import java.util.List;
 
 @Configuration
 @EnableRabbit
-public class RabbitConfig {
-
-    @Bean
-    public SimpleMessageConverter converter() {
-        SimpleMessageConverter converter = new SimpleMessageConverter();
-        converter.setAllowedListPatterns(List.of("*"));
-        return converter;
-    }
-}
+public class RabbitConfig {}
