@@ -1,6 +1,6 @@
 image:
   repository: acrdevopsprojecttest.azurecr.io/demo-go
-  tag: &imageTag v1.0.0-46-gef12ac3
+  tag: &imageTag v1.0.0-50-gaedd16a
 
 namespace: prod
 
