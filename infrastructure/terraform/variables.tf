@@ -44,11 +44,11 @@ variable "azure_vpn_path_to_cert" {
 variable "argocd_path_to_values" {
   type        = string
   description = "Path to ArgoCD Helm values.yaml"
-  default     = "../kubernetes/infrastructure/helm/production/argocd/values.yaml"
+  default     = "../kubernetes/infrastructure/helm/testing/argocd/values.yaml"
 }
 
 variable "github_actions_oidc_subject" {
   type        = string
   description = "GitHub Actions subject pointing at your organization's repository"
-  default     = "repo:KacperKlimas10/DevOps:environment:production"
+  default     = "repo:KacperKlimas10/DevOps:environment:testing"
 }

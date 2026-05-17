@@ -1,8 +1,7 @@
 global:
   domain: argocd-staging.kacperklimas.com # We need to set domain for correct proxying
 configs:
+  params:
+    server.insecure: "true"
   cm:
     statusbadge.enabled: true # -- Enable Status Badge
-server:   # We need to apply additional config to ArgoCD helm chart to proxy traffic via Istio gateway
-  podLabels: # We are injecting Istio Envoy Proxy Sidecar here using annotation for pods. Only for ArgoCD Server because is used with Ingress Gateway for now
-    sidecar.istio.io/inject: "true" # If you don't want a problem with installation remember: If you need to pass some bool value as string use quotation marks "" :)
