@@ -25,6 +25,7 @@ spec:
       project: devops-project-testing
       destination:
         server: https://kubernetes.default.svc
+        namespace: prod
       sources:
         - repoURL: https://github.com/KacperKlimas10/DevOps.git
           path: infrastructure/kubernetes/helm-charts/microservice
