@@ -1,6 +1,6 @@
 image:
   repository: acrdevopsprojecttesting.azurecr.io/storage-service
-  tag: &imageTag v1.0.0-61-g2b66e5b
+  tag: &imageTag v1.0.0-65-g533de55
 
 namespace: prod
 
