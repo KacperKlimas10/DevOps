@@ -37,6 +37,6 @@ az aks get-credentials --resource-group "rg-devopsproject_$ENVIRONMENT" --name "
 
 kubectl apply -f ../kubernetes/argocd-gitops/$ENVIRONMENT
 
-sleep 90
+sleep 120
 
 kubectl rollout restart deployment -n istio-ingress istio-ingressgateway
