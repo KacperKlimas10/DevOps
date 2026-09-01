@@ -24,25 +24,19 @@ locals {
   azure_resourcegroup_name = module.azure_naming.resource_group.name
 }
 
-# General AD Application
-resource "azuread_application" "devops" {
-  display_name = "devopsproject-${local.env}"
-  owners       = [data.azuread_client_config.devops.object_id]
+# Azure Identity for Kubernetes Cluster
+
+resource "azurerm_user_assigned_identity" "aks_cluster" {
+  name                = "aks-identity-${local.env}"
+  resource_group_name = module.azure_resource_group.name
+  location            = var.azure_region
+  tags                = var.azure_application_tags
 }
 
-# Azure AD for Kubernetes Cluster
-resource "azuread_service_principal" "devops" {
-  client_id                    = azuread_application.devops.client_id
-  app_role_assignment_required = false
-  owners                       = [data.azuread_client_config.devops.object_id]
-  feature_tags {
-    enterprise = true
-    gallery    = true
-  }
-}
-
-resource "azuread_service_principal_password" "devops" {
-  service_principal_id = azuread_service_principal.devops.id
+resource "azurerm_role_assignment" "aks_cluster_network" {
+  scope                = module.azure_resource_group.resource_id
+  role_definition_name = "Network Contributor"
+  principal_id         = azurerm_user_assigned_identity.aks_cluster.principal_id
 }
 
 data "azuread_client_config" "devops" {} # Data about default Azure user
@@ -152,7 +146,7 @@ resource "azurerm_virtual_network_gateway" "vpn_gateway" {
   resource_group_name = module.azure_resource_group.name
   type                = "Vpn"
   generation          = "Generation1"
-  sku                 = "VpnGw2AZ" # Zone-redundant gateway
+  sku                 = "VpnGw1AZ" # Zone-redundant gateway -> VpnGw2AZ
   ip_configuration {
     public_ip_address_id = azurerm_public_ip.vpn_public_ip.id
     subnet_id            = module.azure_management_vnet.subnets["vpnsubnet"].resource_id
@@ -446,9 +440,9 @@ module "azure_aks" {
     admin_username = "devops${local.env}_admin"
     ssh_key        = azurerm_ssh_public_key.azure_aks_key.public_key
   }
-  service_principal = {
-    client_id     = azuread_service_principal.devops.client_id
-    client_secret = azuread_service_principal_password.devops.value
+  managed_identities = {
+    system_assigned            = false
+    user_assigned_resource_ids = [azurerm_user_assigned_identity.aks_cluster.id]
   }
   local_account_disabled = false
   tags                   = var.azure_application_tags
@@ -633,7 +627,7 @@ module "devops_postgresql" {
   administrator_login    = "postgresqluser${local.env}" # Setting admin credentials that will be stored in Key Vault and synced with Kubernetes
   administrator_password = random_password.postgresql_admin_password.result
   high_availability = {
-    mode = "SameZone"
+    mode = "SameZone"   # To make infrastructure faster
   }
   zone = "1" # Need to choose AZ for correct provisioning
   databases = {

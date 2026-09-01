@@ -16,7 +16,9 @@ fi
 
 terraform workspace select $ENVIRONMENT
 
-terraform apply -auto-approve
+terraform apply -target=module.devops_postgresql # This needs to be created first
+
+terraform apply -auto-approve -parallelism=20
 
 GITHUB_REPOSITORY="KacperKlimas10/DevOps"
 
