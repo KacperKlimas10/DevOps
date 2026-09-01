@@ -19,6 +19,12 @@ spec:
         {{- include "microservice.selectorLabels" . | nindent 8 }}
         version: {{ .Values.image.tag }}
     spec:
+      strategy:
+        type: RollingUpdate
+        rollingUpdate:
+          maxUnavailable: 0
+          maxSurge: 1
+        progressDeadlineSeconds: 300
       containers:
         - name: {{ include "microservice.fullname" . }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
