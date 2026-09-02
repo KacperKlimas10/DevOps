@@ -11,6 +11,6 @@ func main() {
 	r.GET("/api/demo-go", func(c *gin.Context) {
 		c.String(200, "2 września 2026 - Projekt Kacper Klimas - Symulacja udanego wdrożenia :)")
 	})
-
+blad w kodzie
 	r.Run(":8080")
 }
